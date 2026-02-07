@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canadian Tax Optimizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0 1rem;
+            background-color: #f5f5f5;
+        }
+        h1, h2, h3 {
+            color: #003366;
+        }
+        form {
+            background-color: #ffffff;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 1.5rem;
+        }
+        .field {
+            margin-bottom: 0.5rem;
+        }
+        label {
+            display: inline-block;
+            width: 280px;
+            font-weight: bold;
+        }
+        input[type="number"],
+        input[type="text"],
+        input[type="float"],
+        input[type="int"] {
+            width: 200px;
+            padding: 4px;
+        }
+        input[type="checkbox"] {
+            margin-left: 4px;
+        }
+        .spouse {
+            background-color: #f0f8ff;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+    </style>
+    <script>
+        function toggleSpouse() {
+            const spouseSection = document.getElementById('spouse-section');
+            const hasSpouseCheckbox = document.getElementById('has_spouse');
+            spouseSection.style.display = hasSpouseCheckbox.checked ? 'block' : 'none';
+        }
+        window.addEventListener('DOMContentLoaded', function() {
+            toggleSpouse();
+        });
+    </script>
+</head>
+<body>
+    <h1>Canadian Tax Optimizer</h1>
+    <p>Enter your information below. All numeric values should be entered without commas. If you have a spouse, check the box to reveal their section. If you have children, enter their ages as a comma‑separated list and indicate any children with a disability using zero‑based indices.</p>
+    <form method="get" action="/calculate">
+        <div class="section">
+            <h2>Family Information</h2>
+            <div class="field">
+                <label for="has_spouse">Do you have a spouse?</label>
+                <input type="checkbox" name="has_spouse" id="has_spouse" onchange="toggleSpouse()" {% if saved_params.get('has_spouse') in ['on','true','1','yes'] %}checked{% endif %} />
+            </div>
+            <div class="field">
+                <label for="num_children">Number of children</label>
+                <input type="number" name="num_children" id="num_children" value="{{ saved_params.get('num_children', '0') }}" min="0" step="1" />
+            </div>
+            <div class="field">
+                <label for="children_ages">Children ages (comma separated)</label>
+                <input type="text" name="children_ages" id="children_ages" value="{{ saved_params.get('children_ages', '') }}" />
+            </div>
+            <div class="field">
+                <label for="children_with_disability">Children disability indices (comma separated)</label>
+                <input type="text" name="children_with_disability" id="children_with_disability" value="{{ saved_params.get('children_with_disability', '') }}" />
+            </div>
+            <div class="field">
+                <label for="resp_contributions">RESP contributions</label>
+                <input type="number" name="resp_contributions" id="resp_contributions" step="0.01" value="{{ saved_params.get('resp_contributions', '0') }}" />
+            </div>
+            <div class="field">
+                <label for="eligible_dependant">Eligible dependant?</label>
+                <input type="checkbox" name="eligible_dependant" id="eligible_dependant" {% if saved_params.get('eligible_dependant') in ['on','true','1','yes'] %}checked{% endif %} />
+            </div>
+            <div class="field">
+                <label for="canada_caregiver_amount">Canada caregiver amount</label>
+                <input type="number" name="canada_caregiver_amount" id="canada_caregiver_amount" step="0.01" value="{{ saved_params.get('canada_caregiver_amount', '0') }}" />
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Your Information</h2>
+            {% for name, type_name, default in person_fields %}
+            <div class="field">
+                <label for="tp_{{ name }}">{{ name.replace('_', ' ').title() }}</label>
+                {% if type_name == 'bool' %}
+                    <input type="checkbox" name="tp_{{ name }}" id="tp_{{ name }}" {% if saved_params.get('tp_' ~ name) in ['on','true','1','yes'] %}checked{% endif %} />
+                {% elif type_name == 'int' %}
+                    <input type="number" name="tp_{{ name }}" id="tp_{{ name }}" step="1" value="{{ saved_params.get('tp_' ~ name, default) }}" />
+                {% elif type_name == 'float' %}
+                    <input type="number" name="tp_{{ name }}" id="tp_{{ name }}" step="0.01" value="{{ saved_params.get('tp_' ~ name, default) }}" />
+                {% else %}
+                    <input type="text" name="tp_{{ name }}" id="tp_{{ name }}" value="{{ saved_params.get('tp_' ~ name, default) }}" />
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div id="spouse-section" class="section spouse" style="display: none;">
+            <h2>Spouse Information</h2>
+            {% for name, type_name, default in person_fields %}
+            <div class="field">
+                <label for="sp_{{ name }}">{{ name.replace('_', ' ').title() }}</label>
+                {% if type_name == 'bool' %}
+                    <input type="checkbox" name="sp_{{ name }}" id="sp_{{ name }}" {% if saved_params.get('sp_' ~ name) in ['on','true','1','yes'] %}checked{% endif %} />
+                {% elif type_name == 'int' %}
+                    <input type="number" name="sp_{{ name }}" id="sp_{{ name }}" step="1" value="{{ saved_params.get('sp_' ~ name, default) }}" />
+                {% elif type_name == 'float' %}
+                    <input type="number" name="sp_{{ name }}" id="sp_{{ name }}" step="0.01" value="{{ saved_params.get('sp_' ~ name, default) }}" />
+                {% else %}
+                    <input type="text" name="sp_{{ name }}" id="sp_{{ name }}" value="{{ saved_params.get('sp_' ~ name, default) }}" />
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="section">
+            <button type="submit">Calculate</button>
+        </div>
+    </form>
+</body>
+</html>
