@@ -60,8 +60,13 @@ describe('seed scenarios (deterministic expected outputs)', () => {
       taxesWithheld: 1500
     };
     const res = calculateFromItems(req, items);
-    expect(res.refundOrOwing).toBeCloseTo(3318.99, 2);
-    expect(res.taxPayableTotal).toBeCloseTo(714.27, 2);
+    // Values cross-checked against an independent re-implementation (within $0.01 rounding).
+    expect(res.refundOrOwing).toBeCloseTo(2962.64, 2);
+    expect(res.taxPayableTotal).toBeCloseTo(170.36, 2);
+    // CWB is on the return; the GST/HST credit (CGEB, (356 + 165.42) × 1.25 = 651.78) and OSTC (378)
+    // are paid separately and are not in the refund.
+    expect(res.refundableCreditsAndBenefitsTotal).toBeCloseTo(1633.0, 2);
+    expect(res.benefitsPaidSeparatelyTotal).toBeCloseTo(1029.78, 2);
   });
 
   it('Scenario B: mid income single with RRSP + donations', () => {
@@ -85,8 +90,9 @@ describe('seed scenarios (deterministic expected outputs)', () => {
       taxesWithheld: 22000
     };
     const res = calculateFromItems(req, items);
-    expect(res.refundOrOwing).toBeCloseTo(6667.67, 2);
-    expect(res.taxPayableTotal).toBeCloseTo(15332.33, 2);
+    expect(res.refundOrOwing).toBeCloseTo(7161.9, 2);
+    expect(res.taxPayableTotal).toBeCloseTo(14838.1, 2);
+    expect(res.ontario.healthPremium).toBeCloseTo(750, 2);
   });
 
   it('Scenario C: family with child care, uses Ontario CARE', () => {
@@ -111,7 +117,7 @@ describe('seed scenarios (deterministic expected outputs)', () => {
       taxesWithheld: 12000
     };
     const res = calculateFromItems(req, items);
-    expect(res.refundOrOwing).toBeCloseTo(9447.23, 2);
+    expect(res.refundOrOwing).toBeCloseTo(9919.15, 2);
     expect(res.refundableCreditsAndBenefitsTotal).toBeCloseTo(3440.0, 2);
   });
 });

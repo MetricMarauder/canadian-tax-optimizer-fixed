@@ -93,7 +93,19 @@ export type JurisdictionBreakdown = {
   taxBeforeCredits: number;
   nonRefundableCreditsTotal: number;
   creditsApplied: AppliedItem[];
+  /**
+   * Final tax for the jurisdiction. For Ontario this includes the surtax and Ontario Health
+   * Premium and is net of the Ontario tax reduction.
+   */
   taxAfterCredits: number;
+  /** Dividend tax credit (included in creditsApplied / nonRefundableCreditsTotal). */
+  dividendTaxCredit?: number;
+  /** Ontario only. */
+  surtax?: number;
+  /** Ontario only (ON428 line 80). */
+  ontarioTaxReduction?: number;
+  /** Ontario only. */
+  healthPremium?: number;
 };
 
 export type TaxBreakdown = JurisdictionBreakdown;
@@ -112,13 +124,25 @@ export type ExplanationRow = {
 
 export type ExplanationItem = ExplanationRow;
 
+export type PayrollSummary = {
+  cppContributions: number;
+  cppEnhancedDeduction: number;
+  eiPremiums: number;
+};
+
 export type ReturnResult = {
+  /** Refund (+) or balance owing (−) on the return itself. Excludes benefits paid separately. */
   refundOrOwing: number;
   taxesWithheld: number;
   taxPayableTotal: number;
   refundableCreditsAndBenefitsTotal: number;
   deductionsApplied: AppliedItem[];
   refundableCreditsAndBenefitsApplied: AppliedItem[];
+  /** Estimated benefits paid separately after assessment (GST/HST credit, OSTC). */
+  benefitsPaidSeparatelyTotal: number;
+  benefitsPaidSeparately: AppliedItem[];
+  /** Employee CPP/EI estimated from employment income. */
+  payroll: PayrollSummary;
   federal: JurisdictionBreakdown;
   ontario: JurisdictionBreakdown;
   explanation: ExplanationRow[];
@@ -130,6 +154,7 @@ export type CalculateResponse = {
     taxesWithheldTotal: number;
     taxPayableTotal: number;
     refundableCreditsAndBenefitsTotal: number;
+    benefitsPaidSeparatelyTotal: number;
   };
   taxpayer: ReturnResult;
   spouse?: ReturnResult;

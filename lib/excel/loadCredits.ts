@@ -62,7 +62,9 @@ export function loadRuleItems(excelPath: string): { columns: string[]; items: Ru
 
   let wb: XLSX.WorkBook;
   try {
-    wb = XLSX.readFile(abs);
+    // XLSX.readFile is not available in the ESM build of `xlsx` (this package is "type": "module"),
+    // so read the bytes ourselves and parse the buffer.
+    wb = XLSX.read(fs.readFileSync(abs), { type: 'buffer' });
   } catch (err: any) {
     console.warn(`Unable to read Excel file at ${abs}: ${err?.message ?? err}. Using fallback rules list.`);
     return { columns: [...EXPECTED_COLUMNS], items: buildFallbackRuleItems() };

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { IMPLEMENTED_RULES } from '@/lib/rules/implemented';
+import { IMPLEMENTED_RULES, estimateNetIncome } from '@/lib/rules/implemented';
 import taxConfig from '@/lib/tax/config/2025.json';
 import type { UserContext } from '@/lib/rules/types';
 
@@ -29,9 +29,12 @@ describe('non-refundable credit with phaseout', () => {
   it('reduces federal BPA between start and end thresholds', () => {
     const cfg = taxConfig.federal.basicPersonalAmount;
     const midIncome = (cfg.phaseoutStart + cfg.phaseoutEnd) / 2;
-    const res = IMPLEMENTED_RULES['basic personal amount'](ctxWithIncome(midIncome));
+    const ctx = ctxWithIncome(midIncome);
+    const res = IMPLEMENTED_RULES['basic personal amount'](ctx);
 
-    const frac = (midIncome - cfg.phaseoutStart) / (cfg.phaseoutEnd - cfg.phaseoutStart);
+    // Phase-out is based on net income (employment income less the enhanced CPP deduction).
+    const netIncome = estimateNetIncome(ctx);
+    const frac = (netIncome - cfg.phaseoutStart) / (cfg.phaseoutEnd - cfg.phaseoutStart);
     const bpa = cfg.base - frac * (cfg.base - cfg.min);
     const expected = Math.round(bpa * taxConfig.federal.lowestRate * 100) / 100;
 

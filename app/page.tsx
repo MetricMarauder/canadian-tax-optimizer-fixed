@@ -180,7 +180,7 @@ function PersonSection({
           <input className="w-full rounded-lg border p-2" inputMode="numeric" type="text" value={person.age} onChange={setText('age')} />
         </Field>
 
-        <Field label="Employment income">
+        <Field label="Employment income (CPP/EI are estimated from this)">
           <input className="w-full rounded-lg border p-2" inputMode="decimal" type="text" value={person.employmentIncome} onChange={setText('employmentIncome')} />
         </Field>
 
@@ -192,7 +192,7 @@ function PersonSection({
           <input className="w-full rounded-lg border p-2" inputMode="decimal" type="text" value={person.capitalGains} onChange={setText('capitalGains')} />
         </Field>
 
-        <Field label="Eligible dividends">
+        <Field label="Eligible dividends (actual amount, before gross-up)">
           <input className="w-full rounded-lg border p-2" inputMode="decimal" type="text" value={person.eligibleDividends} onChange={setText('eligibleDividends')} />
         </Field>
 
@@ -264,7 +264,7 @@ function PersonSection({
           <input type="checkbox" className="h-5 w-5" checked={person.includeBenefitsEstimates} onChange={setBool('includeBenefitsEstimates')} />
         </Field>
 
-        <Field label="Taxes withheld (T4 etc.)">
+        <Field label="Income tax deducted (T4 box 22 etc. — not CPP/EI)">
           <input className="w-full rounded-lg border p-2" inputMode="decimal" type="text" value={person.taxesWithheld} onChange={setText('taxesWithheld')} />
         </Field>
       </div>
@@ -283,6 +283,9 @@ function Breakdown({
     nonRefundableCreditsTotal: number;
     creditsApplied: { name: string; amount: number; lineForm?: string; jurisdiction: string }[];
     taxAfterCredits: number;
+    surtax?: number;
+    ontarioTaxReduction?: number;
+    healthPremium?: number;
   };
 }) {
   return (
@@ -292,7 +295,16 @@ function Breakdown({
         <div>Taxable income: <span className="font-medium">${data.taxableIncome.toFixed(2)}</span></div>
         <div>Tax before credits: <span className="font-medium">${data.taxBeforeCredits.toFixed(2)}</span></div>
         <div>Non-refundable credits applied: <span className="font-medium">${data.nonRefundableCreditsTotal.toFixed(2)}</span></div>
-        <div>Tax after credits: <span className="font-medium">${data.taxAfterCredits.toFixed(2)}</span></div>
+        {data.surtax !== undefined && (
+          <div>Ontario surtax: <span className="font-medium">${data.surtax.toFixed(2)}</span></div>
+        )}
+        {data.ontarioTaxReduction !== undefined && (
+          <div>Ontario tax reduction: <span className="font-medium">−${data.ontarioTaxReduction.toFixed(2)}</span></div>
+        )}
+        {data.healthPremium !== undefined && (
+          <div>Ontario Health Premium: <span className="font-medium">${data.healthPremium.toFixed(2)}</span></div>
+        )}
+        <div>Tax payable: <span className="font-medium">${data.taxAfterCredits.toFixed(2)}</span></div>
       </div>
       <div className="mt-3">
         <div className="text-sm font-semibold">Credits detail</div>
@@ -442,7 +454,7 @@ export default function HomePage() {
                 Total withheld: ${result.household.taxesWithheldTotal.toFixed(2)}
               </div>
               <div className="mt-1 text-xs text-gray-600">
-                Net = withheld + refundable credits - tax payable. Positive = refund, negative = owing.
+                Net = withheld + refundable credits on the return − tax payable. Positive = refund, negative = owing.
               </div>
               <div className="mt-1 text-xs text-gray-700">
                 {result.household.refundOrOwing >= 0 ? 'You will receive this refund.' : 'You owe this amount.'}
@@ -455,8 +467,15 @@ export default function HomePage() {
                 Tax payable total: <span className="font-semibold">${result.household.taxPayableTotal.toFixed(2)}</span>
               </div>
               <div className="mt-1 text-sm">
-                Refundable credits/benefits total:{' '}
+                Refundable credits on return (CWB, CARE):{' '}
                 <span className="font-semibold">${result.household.refundableCreditsAndBenefitsTotal.toFixed(2)}</span>
+              </div>
+              <div className="mt-1 text-sm">
+                Benefits paid separately (GST/HST credit, OSTC):{' '}
+                <span className="font-semibold">${result.household.benefitsPaidSeparatelyTotal.toFixed(2)}</span>
+              </div>
+              <div className="mt-1 text-xs text-gray-600">
+                Benefits are paid by CRA over the following July–June and are not part of the refund.
               </div>
             </div>
 

@@ -1,8 +1,7 @@
 import mappingRaw from '@/lib/rules/mapping/rules_mapping.json';
 import type { AppliedItem, ExplanationItem, Jurisdiction } from '@/lib/api/types';
 import type { RuleItem, UserContext } from '@/lib/rules/types';
-import taxConfig from '@/lib/tax/config/2025.json';
-import { IMPLEMENTED_RULES, estimateTaxableIncome, normalizeKey } from '@/lib/rules/implemented';
+import { IMPLEMENTED_RULES, computeDonationCredits, normalizeKey } from '@/lib/rules/implemented';
 
 type MappingEntry = {
   prong: 'A' | 'B' | 'C';
@@ -47,7 +46,10 @@ export type EngineOutput = {
   deductionsApplied: AppliedItem[];
   federalNonRefundableCredits: AppliedItem[];
   ontarioNonRefundableCredits: AppliedItem[];
+  /** Refundable credits claimed on the return (change the refund / balance owing). */
   refundableCreditsAndBenefitsApplied: AppliedItem[];
+  /** Benefits paid separately by CRA after assessment (e.g. GST/HST credit, OSTC) — not part of the refund. */
+  benefitsPaidSeparately: AppliedItem[];
   explanation: ExplanationItem[];
 };
 
@@ -56,7 +58,11 @@ export function runRules(items: RuleItem[], ctx: UserContext): EngineOutput {
   const federalNonRefundableCredits: AppliedItem[] = [];
   const ontarioNonRefundableCredits: AppliedItem[] = [];
   const refundableCreditsAndBenefitsApplied: AppliedItem[] = [];
+  const benefitsPaidSeparately: AppliedItem[] = [];
   const explanation: ExplanationItem[] = [];
+  // Several catalog rows can map to the same rule (e.g. "Donations and gifts" and
+  // "Donations and gifts (Ontario)"). Each rule must only be applied once.
+  const appliedRuleKeys = new Map<string, string>();
 
   const normalizeMapKey = new Map<string, string>();
   for (const key of Object.keys(mapping)) {
@@ -83,15 +89,23 @@ export function runRules(items: RuleItem[], ctx: UserContext): EngineOutput {
       continue;
     }
 
+    const ruleKey = normalizeKey(key);
+    const firstRow = appliedRuleKeys.get(ruleKey);
+    if (firstRow) {
+      explanation.push(makeExplain(item, false, 0, `Already included in the calculation for "${firstRow}".`));
+      continue;
+    }
+    appliedRuleKeys.set(ruleKey, item.name);
+
     const meta = mapping[key];
     const res = ruleFn(ctx, meta.params);
 
     // Special case: donations are jurisdiction-split but often appear as one row.
     if (normalizeKey(key) === 'donations and gifts') {
-      const split = splitDonations(ctx);
+      const split = computeDonationCredits(ctx);
       if (split.federal > 0) federalNonRefundableCredits.push(makeApplied(item, 'Federal', split.federal));
       if (split.ontario > 0) ontarioNonRefundableCredits.push(makeApplied(item, 'Ontario', split.ontario));
-      explanation.push(makeExplain(item, split.federal + split.ontario > 0, split.federal + split.ontario, res.reason));
+      explanation.push(makeExplain(item, split.federal + split.ontario > 0, Math.round((split.federal + split.ontario) * 100) / 100, res.reason));
       continue;
     }
 
@@ -104,9 +118,10 @@ export function runRules(items: RuleItem[], ctx: UserContext): EngineOutput {
         if (j === 'Federal') federalNonRefundableCredits.push(makeApplied(item, j, res.amount));
         if (j === 'Ontario') ontarioNonRefundableCredits.push(makeApplied(item, j, res.amount));
       }
-    } else {
+    } else if (res.amount > 0) {
+      const target = meta.params?.paidSeparately ? benefitsPaidSeparately : refundableCreditsAndBenefitsApplied;
       for (const j of jurisdictionTargets) {
-        refundableCreditsAndBenefitsApplied.push(makeApplied(item, j, res.amount));
+        target.push(makeApplied(item, j, res.amount));
       }
     }
 
@@ -118,6 +133,7 @@ export function runRules(items: RuleItem[], ctx: UserContext): EngineOutput {
     federalNonRefundableCredits,
     ontarioNonRefundableCredits,
     refundableCreditsAndBenefitsApplied,
+    benefitsPaidSeparately,
     explanation,
   };
 }
@@ -145,24 +161,4 @@ function makeApplied(item: RuleItem, jurisdiction: Jurisdiction, amount: number)
     lineForm: item.lineForm,
     amount,
   };
-}
-
-function splitDonations(ctx: UserContext): { federal: number; ontario: number } {
-  const donations = Math.max(0, ctx.credits.donations);
-  const first = Math.min(200, donations);
-  const rest = Math.max(0, donations - 200);
-
-  const taxableIncome = estimateTaxableIncome(ctx);
-  const fedCfg = taxConfig.federal.donationCredit;
-  const restRate = taxableIncome > fedCfg.topRateIncomeThreshold ? fedCfg.over200TopRate : fedCfg.over200Rate;
-  const federal = round2(first * fedCfg.first200Rate + rest * restRate);
-
-  const onCfg = taxConfig.ontario.donationCredit;
-  const ontario = round2(first * onCfg.first200Rate + rest * onCfg.over200Rate);
-
-  return { federal, ontario };
-}
-
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
 }

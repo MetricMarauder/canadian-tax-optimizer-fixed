@@ -3,119 +3,157 @@
     "prong": "A",
     "kind": "deduction",
     "jurisdiction": "Both",
-    "requiredInputs": ["deductions.rrspContributions"],
+    "requiredInputs": [
+      "deductions.rrspContributions"
+    ],
     "params": {}
   },
   "FHSA deduction": {
     "prong": "A",
     "kind": "deduction",
     "jurisdiction": "Both",
-    "requiredInputs": ["deductions.fhsaContributions"],
+    "requiredInputs": [
+      "deductions.fhsaContributions"
+    ],
     "params": {}
   },
   "RPP deduction": {
     "prong": "A",
     "kind": "deduction",
     "jurisdiction": "Both",
-    "requiredInputs": ["deductions.rppContributions"],
+    "requiredInputs": [
+      "deductions.rppContributions"
+    ],
     "params": {}
   },
   "Union or professional dues": {
     "prong": "A",
     "kind": "deduction",
     "jurisdiction": "Both",
-    "requiredInputs": ["deductions.unionDues"],
+    "requiredInputs": [
+      "deductions.unionDues"
+    ],
     "params": {}
   },
   "Child care expenses": {
     "prong": "A",
     "kind": "deduction",
     "jurisdiction": "Both",
-    "requiredInputs": ["deductions.childCareExpenses"],
+    "requiredInputs": [
+      "deductions.childCareExpenses"
+    ],
     "params": {}
   },
   "Basic personal amount": {
     "prong": "B",
     "kind": "nonRefundableCredit",
     "jurisdiction": "Federal",
-    "requiredInputs": ["income"],
+    "requiredInputs": [
+      "income"
+    ],
     "params": {}
   },
   "Ontario basic personal amount": {
     "prong": "B",
     "kind": "nonRefundableCredit",
     "jurisdiction": "Ontario",
-    "requiredInputs": ["income"],
+    "requiredInputs": [
+      "income"
+    ],
     "params": {}
   },
   "Canada employment amount": {
     "prong": "B",
     "kind": "nonRefundableCredit",
     "jurisdiction": "Federal",
-    "requiredInputs": ["income.employment"],
+    "requiredInputs": [
+      "income.employment"
+    ],
     "params": {}
   },
   "Disability amount": {
     "prong": "B",
     "kind": "nonRefundableCredit",
     "jurisdiction": "Federal",
-    "requiredInputs": ["credits.hasDisabilityDTC"],
+    "requiredInputs": [
+      "credits.hasDisabilityDTC"
+    ],
     "params": {}
   },
   "Ontario disability amount": {
     "prong": "B",
     "kind": "nonRefundableCredit",
     "jurisdiction": "Ontario",
-    "requiredInputs": ["credits.hasDisabilityDTC"],
+    "requiredInputs": [
+      "credits.hasDisabilityDTC"
+    ],
     "params": {}
   },
   "Donations and gifts": {
     "prong": "B",
     "kind": "nonRefundableCredit",
     "jurisdiction": "Both",
-    "requiredInputs": ["credits.donations"],
+    "requiredInputs": [
+      "credits.donations"
+    ],
     "params": {}
   },
   "Tuition amount": {
     "prong": "B",
     "kind": "nonRefundableCredit",
     "jurisdiction": "Federal",
-    "requiredInputs": ["credits.tuitionFees"],
+    "requiredInputs": [
+      "credits.tuitionFees"
+    ],
     "params": {}
   },
   "Ontario tuition amount": {
     "prong": "B",
     "kind": "nonRefundableCredit",
     "jurisdiction": "Ontario",
-    "requiredInputs": ["credits.tuitionFees"],
+    "requiredInputs": [
+      "credits.tuitionFees"
+    ],
     "params": {}
   },
   "Canada workers benefit": {
     "prong": "C",
     "kind": "refundableCreditOrBenefit",
     "jurisdiction": "Federal",
-    "requiredInputs": ["benefits.cwbEligible"],
+    "requiredInputs": [
+      "benefits.cwbEligible"
+    ],
     "params": {}
   },
   "Ontario CARE child care tax credit": {
     "prong": "C",
     "kind": "refundableCreditOrBenefit",
     "jurisdiction": "Ontario",
-    "requiredInputs": ["deductions.childCareExpenses"],
+    "requiredInputs": [
+      "deductions.childCareExpenses"
+    ],
     "params": {}
   },
   "GST/HST credit": {
     "prong": "C",
     "kind": "refundableCreditOrBenefit",
     "jurisdiction": "Federal",
-    "requiredInputs": ["benefits.includeBenefitsEstimates"],
-    "params": {}
+    "requiredInputs": [
+      "benefits.includeBenefitsEstimates"
+    ],
+    "params": {
+      "paidSeparately": true
+    }
   },
   "Ontario sales tax credit": {
     "prong": "C",
     "kind": "refundableCreditOrBenefit",
     "jurisdiction": "Ontario",
-    "requiredInputs": ["benefits.includeBenefitsEstimates"],
-    "params": {}
+    "requiredInputs": [
+      "benefits.includeBenefitsEstimates"
+    ],
+    "params": {
+      "paidSeparately": true
+    }
   }
 }

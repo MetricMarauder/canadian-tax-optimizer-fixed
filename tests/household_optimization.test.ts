@@ -188,9 +188,8 @@ describe('household optimizer', () => {
     expect(res.transferSummary?.tuitionFederalCreditTransferred).toBe(
       Math.round(5000 * taxConfig.federal.lowestRate * 100) / 100
     );
-    expect(res.transferSummary?.tuitionOntarioCreditTransferred).toBe(
-      Math.round(5000 * taxConfig.ontario.lowestRate * 100) / 100
-    );
+    // Ontario has no current-year tuition credit, so nothing transfers provincially.
+    expect(res.transferSummary?.tuitionOntarioCreditTransferred).toBe(0);
   });
 
   it('limits tuition transfer to the donor’s unused credit amount', () => {
@@ -227,7 +226,7 @@ describe('household optimizer', () => {
       spouse: {
         age: 23,
         province: 'Ontario',
-        income: { employment: 14000, other: 0, capitalGains: 0, eligibleDividends: 0 },
+        income: { employment: 20000, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
           rrspDeductionLimit: 0,

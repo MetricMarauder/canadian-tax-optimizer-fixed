@@ -82,7 +82,6 @@ type TransferBaseCaps = {
 
 const EXCEL_PATH = 'ontario_federal_tax_credits_2025.xlsx';
 const TUITION_TRANSFER_MAX = 5000;
-const ONTARIO_SPOUSAL_AMOUNT_BASE = 11905;
 const FEDERAL_SPOUSAL_CREDIT_NAME = 'Spouse or common-law partner amount (line 30300)';
 const ONTARIO_SPOUSAL_CREDIT_NAME = 'Ontario spouse or common-law partner amount (line 58120)';
 
@@ -101,12 +100,16 @@ export function combineHousehold(taxpayer: ReturnResult, spouse?: ReturnResult) 
 
   // refund/owing = withheld - payable + refundable/benefits
   const refundOrOwing = round2(taxesWithheldTotal - taxPayableTotal + refundableCreditsAndBenefitsTotal);
+  const benefitsPaidSeparatelyTotal = round2(
+    taxpayer.benefitsPaidSeparatelyTotal + (spouse?.benefitsPaidSeparatelyTotal ?? 0)
+  );
 
   return {
     refundOrOwing,
     taxesWithheldTotal,
     taxPayableTotal,
     refundableCreditsAndBenefitsTotal,
+    benefitsPaidSeparatelyTotal,
   };
 }
 
@@ -136,9 +139,13 @@ export function calculateOptimizedHouseholdFromItems(
     cache: new Map<string, Evaluation>(),
   };
 
+  const totalChildCareExpenses =
+    ctx.taxpayerBase.deductions.childCareExpenses + ctx.spouseBase.deductions.childCareExpenses;
   const initialPlan: OptimizationPlan = {
     donationsClaimant: null,
-    childCareClaimant: null,
+    // CRA rule: the spouse with the lower net income generally must claim child care expenses
+    // (exceptions such as full-time school, incarceration or infirmity are not modelled).
+    childCareClaimant: totalChildCareExpenses > 0 ? lowerNetIncomeSpouse(ctx) : null,
     benefitClaimant: req.household.claimant,
     cwbClaimant: req.household.claimant,
     personalAmountClaimant: req.household.claimant,
@@ -163,7 +170,8 @@ export function calculateOptimizedHouseholdFromItems(
   const tuitionNet = round2(best.plan.tuitionTransferFromSpouse - best.plan.tuitionTransferFromTaxpayer);
   const tuitionTransferAmount = Math.abs(tuitionNet);
   const tuitionFederalCreditTransferred = round2(tuitionTransferAmount * taxConfig.federal.lowestRate);
-  const tuitionOntarioCreditTransferred = round2(tuitionTransferAmount * taxConfig.ontario.lowestRate);
+  // Ontario has no current-year tuition credit (eliminated in 2017), so nothing transfers provincially.
+  const tuitionOntarioCreditTransferred = 0;
   const taxpayer = annotateReturnWithTransfers(best.taxpayer, best.plan, 'taxpayer');
   const spouse = annotateReturnWithTransfers(best.spouse, best.plan, 'spouse');
 
@@ -278,68 +286,61 @@ function annotateCredits(
   });
 }
 
-function applySpousalPersonalAmountTransfer(
-  requestedClaimant: Claimant,
-  maritalStatus: HouseholdSettings['maritalStatus'],
-  taxpayer: ReturnResult,
-  spouse: ReturnResult,
-  taxpayerNetIncome: number,
-  spouseNetIncome: number
-): {
+type SpousalAmount = {
   claimant: Claimant;
   federalCredit: number;
   ontarioCredit: number;
-  taxpayer: ReturnResult;
-  spouse: ReturnResult;
-} {
+};
+
+/**
+ * Spouse or common-law partner amount (federal line 30300 / ON428 line 58120), claimed by
+ * `requestedClaimant` based on the other spouse's net income.
+ */
+function computeSpousalAmount(
+  requestedClaimant: Claimant,
+  maritalStatus: HouseholdSettings['maritalStatus'],
+  taxpayerNetIncome: number,
+  spouseNetIncome: number
+): SpousalAmount {
   if (maritalStatus === 'single' || !requestedClaimant) {
-    return {
-      claimant: null,
-      federalCredit: 0,
-      ontarioCredit: 0,
-      taxpayer,
-      spouse,
-    };
+    return { claimant: null, federalCredit: 0, ontarioCredit: 0 };
   }
-
-  if (requestedClaimant === 'taxpayer') {
-    const credits = computeSpousalPersonalAmountCredits(taxpayerNetIncome, spouseNetIncome);
-    if (credits.federal <= 0 && credits.ontario <= 0) {
-      return {
-        claimant: null,
-        federalCredit: 0,
-        ontarioCredit: 0,
-        taxpayer,
-        spouse,
-      };
-    }
-
-    return {
-      claimant: 'taxpayer',
-      federalCredit: credits.federal,
-      ontarioCredit: credits.ontario,
-      taxpayer: applySpousalPersonalAmountToReturn(taxpayer, credits.federal, credits.ontario, 'spouse'),
-      spouse,
-    };
-  }
-
-  const credits = computeSpousalPersonalAmountCredits(spouseNetIncome, taxpayerNetIncome);
+  const credits =
+    requestedClaimant === 'taxpayer'
+      ? computeSpousalPersonalAmountCredits(taxpayerNetIncome, spouseNetIncome)
+      : computeSpousalPersonalAmountCredits(spouseNetIncome, taxpayerNetIncome);
   if (credits.federal <= 0 && credits.ontario <= 0) {
-    return {
-      claimant: null,
-      federalCredit: 0,
-      ontarioCredit: 0,
-      taxpayer,
-      spouse,
-    };
+    return { claimant: null, federalCredit: 0, ontarioCredit: 0 };
   }
+  return { claimant: requestedClaimant, federalCredit: credits.federal, ontarioCredit: credits.ontario };
+}
 
+function spousalExtraCredits(amount: SpousalAmount, role: 'taxpayer' | 'spouse'): CalculationOverrides['extraCredits'] {
+  if (amount.claimant !== role) return undefined;
+  const from = role === 'taxpayer' ? 'spouse' : 'taxpayer';
   return {
-    claimant: 'spouse',
-    federalCredit: credits.federal,
-    ontarioCredit: credits.ontario,
-    taxpayer,
-    spouse: applySpousalPersonalAmountToReturn(spouse, credits.federal, credits.ontario, 'taxpayer'),
+    federal:
+      amount.federalCredit > 0
+        ? [
+            {
+              name: `${FEDERAL_SPOUSAL_CREDIT_NAME} (based on ${from}'s net income)`,
+              amount: amount.federalCredit,
+              jurisdiction: 'Federal',
+              lineForm: 'Line 30300',
+            },
+          ]
+        : [],
+    ontario:
+      amount.ontarioCredit > 0
+        ? [
+            {
+              name: `${ONTARIO_SPOUSAL_CREDIT_NAME} (based on ${from}'s net income)`,
+              amount: amount.ontarioCredit,
+              jurisdiction: 'Ontario',
+              lineForm: 'Line 58120',
+            },
+          ]
+        : [],
   };
 }
 
@@ -350,7 +351,8 @@ function computeSpousalPersonalAmountCredits(
   const claimantFederalBase = federalBasicPersonalAmountBase(claimantNetIncome);
   const donorNetIncome = Math.max(0, spouseNetIncome);
   const federalBase = Math.max(0, claimantFederalBase - donorNetIncome);
-  const ontarioBase = Math.max(0, ONTARIO_SPOUSAL_AMOUNT_BASE - donorNetIncome);
+  const onCfg = taxConfig.ontario.spouseAmount;
+  const ontarioBase = Math.min(onCfg.max, Math.max(0, onCfg.base - donorNetIncome));
 
   return {
     federal: round2(federalBase * taxConfig.federal.lowestRate),
@@ -365,77 +367,6 @@ function federalBasicPersonalAmountBase(netIncome: number): number {
   if (income <= cfg.phaseoutStart) return cfg.base;
   const frac = (income - cfg.phaseoutStart) / (cfg.phaseoutEnd - cfg.phaseoutStart);
   return round2(cfg.base - frac * (cfg.base - cfg.min));
-}
-
-function applySpousalPersonalAmountToReturn(
-  result: ReturnResult,
-  federalCredit: number,
-  ontarioCredit: number,
-  from: 'taxpayer' | 'spouse'
-): ReturnResult {
-  const updatedFederalCredits =
-    federalCredit > 0
-      ? [
-          ...result.federal.creditsApplied,
-          {
-            name: `${FEDERAL_SPOUSAL_CREDIT_NAME} (transferred from ${from})`,
-            amount: federalCredit,
-            jurisdiction: 'Federal' as const,
-            lineForm: 'Line 30300',
-          },
-        ]
-      : result.federal.creditsApplied;
-  const updatedOntarioCredits =
-    ontarioCredit > 0
-      ? [
-          ...result.ontario.creditsApplied,
-          {
-            name: `${ONTARIO_SPOUSAL_CREDIT_NAME} (transferred from ${from})`,
-            amount: ontarioCredit,
-            jurisdiction: 'Ontario' as const,
-            lineForm: 'Line 58120',
-          },
-        ]
-      : result.ontario.creditsApplied;
-
-  const federalNonRefundableCreditsTotal = round2(result.federal.nonRefundableCreditsTotal + federalCredit);
-  const federalTaxAfterCredits = Math.max(0, round2(result.federal.taxBeforeCredits - federalNonRefundableCreditsTotal));
-  const ontarioNonRefundableCreditsTotal = round2(result.ontario.nonRefundableCreditsTotal + ontarioCredit);
-  const ontarioTaxAfterCredits = computeOntarioTaxAfterCredits(
-    result.ontario.taxBeforeCredits,
-    ontarioNonRefundableCreditsTotal
-  );
-
-  const taxPayableTotal = round2(federalTaxAfterCredits + ontarioTaxAfterCredits);
-  const refundOrOwing = round2(
-    result.taxesWithheld - taxPayableTotal + result.refundableCreditsAndBenefitsTotal
-  );
-
-  return {
-    ...result,
-    refundOrOwing,
-    taxPayableTotal,
-    federal: {
-      ...result.federal,
-      creditsApplied: updatedFederalCredits,
-      nonRefundableCreditsTotal: federalNonRefundableCreditsTotal,
-      taxAfterCredits: federalTaxAfterCredits,
-    },
-    ontario: {
-      ...result.ontario,
-      creditsApplied: updatedOntarioCredits,
-      nonRefundableCreditsTotal: ontarioNonRefundableCreditsTotal,
-      taxAfterCredits: ontarioTaxAfterCredits,
-    },
-  };
-}
-
-function computeOntarioTaxAfterCredits(taxBeforeCredits: number, nonRefundableCreditsTotal: number): number {
-  const preSurtaxTax = Math.max(0, round2(taxBeforeCredits - nonRefundableCreditsTotal));
-  const { threshold1Tax, rate1, threshold2Tax, rate2 } = taxConfig.ontario.surtax;
-  const s1 = Math.max(0, (preSurtaxTax - threshold1Tax) * rate1);
-  const s2 = Math.max(0, (preSurtaxTax - threshold2Tax) * rate2);
-  return round2(preSurtaxTax + round2(s1 + s2));
 }
 
 function optimizePlan(initialPlan: OptimizationPlan, ctx: OptimizationContext): Evaluation {
@@ -454,15 +385,6 @@ function optimizePlan(initialPlan: OptimizationPlan, ctx: OptimizationContext): 
       ctx
     );
 
-    best = pickBest(
-      best,
-      [
-        { ...best.plan, childCareClaimant: null },
-        { ...best.plan, childCareClaimant: 'taxpayer' },
-        { ...best.plan, childCareClaimant: 'spouse' },
-      ],
-      ctx
-    );
 
     best = pickBest(
       best,
@@ -619,39 +541,38 @@ function evaluatePlan(plan: OptimizationPlan, ctx: OptimizationContext): Evaluat
   }
 
   const prepared = applyPlanTransfers(basePrepared, normalized);
+  const spousal = computeSpousalAmount(
+    normalized.personalAmountClaimant,
+    ctx.maritalStatus,
+    taxpayerNetIncome,
+    spouseNetIncome
+  );
   const taxpayer = calculateTaxFromItems(
     prepared.taxpayer,
     ctx.maritalStatus,
     taxpayerSpouseNetIncome,
     ctx.items,
-    prepared.taxpayerOverrides
+    { ...prepared.taxpayerOverrides, extraCredits: spousalExtraCredits(spousal, 'taxpayer') }
   );
   const spouse = calculateTaxFromItems(
     prepared.spouse,
     ctx.maritalStatus,
     spouseSpouseNetIncome,
     ctx.items,
-    prepared.spouseOverrides
+    { ...prepared.spouseOverrides, extraCredits: spousalExtraCredits(spousal, 'spouse') }
   );
-  const withPersonalAmount = applySpousalPersonalAmountTransfer(
-    normalized.personalAmountClaimant,
-    ctx.maritalStatus,
-    taxpayer,
-    spouse,
-    taxpayerNetIncome,
-    spouseNetIncome
-  );
-  const household = combineHousehold(withPersonalAmount.taxpayer, withPersonalAmount.spouse);
+  const household = combineHousehold(taxpayer, spouse);
 
   const evaluated: Evaluation = {
     plan: normalized,
-    taxpayer: withPersonalAmount.taxpayer,
-    spouse: withPersonalAmount.spouse,
+    taxpayer,
+    spouse,
     household,
-    personalAmountClaimant: withPersonalAmount.claimant,
-    personalAmountFederalCredit: withPersonalAmount.federalCredit,
-    personalAmountOntarioCredit: withPersonalAmount.ontarioCredit,
-    score: household.refundOrOwing,
+    personalAmountClaimant: spousal.claimant,
+    personalAmountFederalCredit: spousal.federalCredit,
+    personalAmountOntarioCredit: spousal.ontarioCredit,
+    // Household cash outcome: refund on the returns plus benefits CRA pays separately.
+    score: round2(household.refundOrOwing + household.benefitsPaidSeparatelyTotal),
   };
   ctx.cache.set(requestedKey, evaluated);
   ctx.cache.set(key, evaluated);
@@ -708,28 +629,41 @@ function applyPlanBase(plan: OptimizationPlan, ctx: OptimizationContext): Prepar
   const bothDisabilityCwbEligible =
     taxpayer.benefits.cwbDisabilityEligible && spouse.benefits.cwbDisabilityEligible;
 
+  // Ontario tax reduction: dependant children must be claimed by the spouse with the higher net income.
+  const totalDependants =
+    ctx.taxpayerBase.deductions.numChildrenUnder7 +
+    ctx.taxpayerBase.deductions.numChildren7to16 +
+    ctx.taxpayerBase.deductions.numChildrenDTCEligible +
+    ctx.spouseBase.deductions.numChildrenUnder7 +
+    ctx.spouseBase.deductions.numChildren7to16 +
+    ctx.spouseBase.deductions.numChildrenDTCEligible;
+  const higherIncome = higherNetIncomeSpouse(ctx);
+
   const taxpayerOverrides: CalculationOverrides = {
     benefits: {
       claimGstHstCredit: taxpayerClaimsBenefits,
       claimOstc: taxpayerClaimsBenefits,
-      claimCareCredit: taxpayerClaimsBenefits,
+      // CARE goes with the child care deduction (claimed by whoever deducts the expenses).
+      claimCareCredit: true,
       cwbClaimBasic: taxpayerClaimsCwb,
       cwbClaimDisability: taxpayerClaimsCwb,
       cwbDisabilityBothEligible: bothDisabilityCwbEligible,
     },
     credits: {},
+    ontarioTaxReductionDependants: higherIncome === 'taxpayer' ? totalDependants : 0,
   };
 
   const spouseOverrides: CalculationOverrides = {
     benefits: {
       claimGstHstCredit: spouseClaimsBenefits,
       claimOstc: spouseClaimsBenefits,
-      claimCareCredit: spouseClaimsBenefits,
+      claimCareCredit: true,
       cwbClaimBasic: spouseClaimsCwb,
       cwbClaimDisability: spouseClaimsCwb,
       cwbDisabilityBothEligible: bothDisabilityCwbEligible,
     },
     credits: {},
+    ontarioTaxReductionDependants: higherIncome === 'spouse' ? totalDependants : 0,
   };
 
   return {
@@ -787,9 +721,26 @@ function applyPlanTransfers(base: PreparedInputs, plan: OptimizationPlan): Prepa
 
 function cloneOverrides(overrides: CalculationOverrides): CalculationOverrides {
   return {
+    ...overrides,
     benefits: overrides.benefits ? { ...overrides.benefits } : undefined,
     credits: overrides.credits ? { ...overrides.credits } : undefined,
   };
+}
+
+/** Net income before child care expenses, used to decide which spouse must claim them. */
+function netIncomeBeforeChildCare(person: PersonInput, maritalStatus: HouseholdSettings['maritalStatus']): number {
+  const ctx = buildUserContext(person, maritalStatus);
+  return estimateNetIncome({ ...ctx, deductions: { ...ctx.deductions, childCareExpenses: 0 } });
+}
+
+function lowerNetIncomeSpouse(ctx: OptimizationContext): 'taxpayer' | 'spouse' {
+  const t = netIncomeBeforeChildCare(ctx.taxpayerBase, ctx.maritalStatus);
+  const s = netIncomeBeforeChildCare(ctx.spouseBase, ctx.maritalStatus);
+  return s < t ? 'spouse' : 'taxpayer';
+}
+
+function higherNetIncomeSpouse(ctx: OptimizationContext): 'taxpayer' | 'spouse' {
+  return lowerNetIncomeSpouse(ctx) === 'taxpayer' ? 'spouse' : 'taxpayer';
 }
 
 function constrainTransfersToUnused(
