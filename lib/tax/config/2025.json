@@ -41,247 +41,32 @@
     "dividendTaxCredit": {
       "eligibleGrossUp": 0.38,
       "eligibleRate": 0.150198
-    }
+    },
+    "quebecAbatement": 0.165
   },
-  "ontario": {
-    "brackets": [
-      {
-        "upTo": 52886,
-        "rate": 0.0505
-      },
-      {
-        "upTo": 105775,
-        "rate": 0.0915
-      },
-      {
-        "upTo": 150000,
-        "rate": 0.1116
-      },
-      {
-        "upTo": 220000,
-        "rate": 0.1216
-      },
-      {
-        "upTo": null,
-        "rate": 0.1316
-      }
-    ],
-    "lowestRate": 0.0505,
-    "basicPersonalAmount": 12747,
-    "disabilityAmount": 10298,
-    "surtax": {
-      "threshold1Tax": 5710,
-      "rate1": 0.2,
-      "threshold2Tax": 7307,
-      "rate2": 0.36
+  "payroll": {
+    "cpp": {
+      "ympe": 71300,
+      "yampe": 81200,
+      "basicExemption": 3500,
+      "baseRate": 0.0495,
+      "firstEnhancedRate": 0.01,
+      "cpp2Rate": 0.04
     },
-    "donationCredit": {
-      "first200Rate": 0.0505,
-      "over200Rate": 0.1116
+    "qpp": {
+      "baseRate": 0.054,
+      "firstEnhancedRate": 0.01,
+      "qpp2Rate": 0.04
     },
-    "careChildcareTaxCredit": {
-      "table": [
-        {
-          "max": 20000,
-          "rate": 0.75
-        },
-        {
-          "max": 22500,
-          "rate": 0.73
-        },
-        {
-          "max": 25000,
-          "rate": 0.71
-        },
-        {
-          "max": 27500,
-          "rate": 0.69
-        },
-        {
-          "max": 30000,
-          "rate": 0.67
-        },
-        {
-          "max": 32500,
-          "rate": 0.65
-        },
-        {
-          "max": 35000,
-          "rate": 0.63
-        },
-        {
-          "max": 37500,
-          "rate": 0.61
-        },
-        {
-          "max": 40000,
-          "rate": 0.59
-        },
-        {
-          "max": 45000,
-          "rate": 0.57
-        },
-        {
-          "max": 50000,
-          "rate": 0.55
-        },
-        {
-          "max": 55000,
-          "rate": 0.53
-        },
-        {
-          "max": 60000,
-          "rate": 0.51
-        },
-        {
-          "max": 63600,
-          "rate": 0.49
-        },
-        {
-          "max": 67200,
-          "rate": 0.47
-        },
-        {
-          "max": 70800,
-          "rate": 0.45
-        },
-        {
-          "max": 74400,
-          "rate": 0.43
-        },
-        {
-          "max": 78000,
-          "rate": 0.41
-        },
-        {
-          "max": 81600,
-          "rate": 0.39
-        },
-        {
-          "max": 85200,
-          "rate": 0.37
-        },
-        {
-          "max": 88800,
-          "rate": 0.35
-        },
-        {
-          "max": 92400,
-          "rate": 0.33
-        },
-        {
-          "max": 96000,
-          "rate": 0.31
-        },
-        {
-          "max": 99600,
-          "rate": 0.29
-        },
-        {
-          "max": 103200,
-          "rate": 0.27
-        },
-        {
-          "max": 106800,
-          "rate": 0.25
-        },
-        {
-          "max": 110400,
-          "rate": 0.23
-        },
-        {
-          "max": 114000,
-          "rate": 0.21
-        },
-        {
-          "max": 117600,
-          "rate": 0.19
-        },
-        {
-          "max": 121200,
-          "rate": 0.17
-        },
-        {
-          "max": 124800,
-          "rate": 0.15
-        },
-        {
-          "max": 128400,
-          "rate": 0.13
-        },
-        {
-          "max": 132000,
-          "rate": 0.11
-        },
-        {
-          "max": 135600,
-          "rate": 0.09
-        },
-        {
-          "max": 139200,
-          "rate": 0.07
-        },
-        {
-          "max": 142800,
-          "rate": 0.05
-        },
-        {
-          "max": 146400,
-          "rate": 0.03
-        },
-        {
-          "max": 150000,
-          "rate": 0.01
-        },
-        {
-          "max": null,
-          "rate": 0.0
-        }
-      ]
+    "ei": {
+      "maxInsurableEarnings": 65700,
+      "rate": 0.0164,
+      "quebecRate": 0.0131
     },
-    "dividendTaxCredit": {
-      "eligibleRate": 0.1
-    },
-    "spouseAmount": {
-      "base": 11905,
-      "max": 10823
-    },
-    "taxReduction": {
-      "basic": 294,
-      "perDependant": 544
-    },
-    "healthPremium": [
-      {
-        "from": 20000,
-        "rate": 0.06,
-        "base": 0,
-        "max": 300
-      },
-      {
-        "from": 36000,
-        "rate": 0.06,
-        "base": 300,
-        "max": 450
-      },
-      {
-        "from": 48000,
-        "rate": 0.25,
-        "base": 450,
-        "max": 600
-      },
-      {
-        "from": 72000,
-        "rate": 0.25,
-        "base": 600,
-        "max": 750
-      },
-      {
-        "from": 200000,
-        "rate": 0.25,
-        "base": 750,
-        "max": 900
-      }
-    ]
+    "qpip": {
+      "maxInsurableEarnings": 98000,
+      "rate": 0.00494
+    }
   },
   "benefits": {
     "cwb": {
@@ -290,7 +75,7 @@
       "singlePhaseoutStart": 26855,
       "singlePhaseoutEnd": 37742,
       "familyPhaseoutStart": 30639,
-      "familyPhaseoutEnd": 49393,
+      "familyPhaseoutEnd": 49392,
       "disabilityMax": 843,
       "disabilitySingleStart": 37740,
       "disabilitySingleEnd": 43360,
@@ -305,7 +90,7 @@
       "minimumAge": 19
     },
     "gstHst": {
-      "_note": "Canada Groceries and Essentials Benefit (formerly GST/HST credit) for July 2026–June 2027, based on the 2025 return: 2026-indexed GST/HST credit amounts × 1.25 enhancement. Phase-out threshold/rate are not enhanced.",
+      "_note": "Canada Groceries and Essentials Benefit (formerly GST/HST credit) for July 2026–June 2027, based on the 2025 return: 2026-indexed amounts × 1.25. Phase-out threshold/rate not enhanced.",
       "baseAdult": 356,
       "baseSpouse": 356,
       "baseSingleParentFirstChild": 356,
@@ -317,11 +102,24 @@
       "reductionBase": 46432,
       "reductionRate": 0.05
     },
-    "ostc": {
-      "maxPerAdultOrChild": 378,
-      "singleNoChildrenThreshold": 29047,
-      "familyThreshold": 36309,
-      "reductionRate": 0.04
+    "ccb": {
+      "_note": "Canada child benefit, July 2026–June 2027 (based on 2025 AFNI).",
+      "under6": 8157,
+      "age6to17": 6883,
+      "threshold1": 38237,
+      "threshold2": 82847,
+      "rates1": [
+        0.07,
+        0.135,
+        0.19,
+        0.23
+      ],
+      "rates2": [
+        0.032,
+        0.057,
+        0.08,
+        0.095
+      ]
     }
   },
   "deductions": {
@@ -332,18 +130,1031 @@
     },
     "childCareEarnedIncomeFraction": 0.6666666667
   },
-  "payroll": {
-    "cpp": {
-      "ympe": 71300,
-      "yampe": 81200,
-      "basicExemption": 3500,
-      "baseRate": 0.0495,
-      "firstEnhancedRate": 0.01,
-      "cpp2Rate": 0.04
+  "provinces": {
+    "ON": {
+      "name": "Ontario",
+      "brackets": [
+        {
+          "upTo": 52886,
+          "rate": 0.0505
+        },
+        {
+          "upTo": 105775,
+          "rate": 0.0915
+        },
+        {
+          "upTo": 150000,
+          "rate": 0.1116
+        },
+        {
+          "upTo": 220000,
+          "rate": 0.1216
+        },
+        {
+          "upTo": null,
+          "rate": 0.1316
+        }
+      ],
+      "lowestRate": 0.0505,
+      "basicPersonalAmount": {
+        "base": 12747
+      },
+      "spouseAmount": {
+        "max": 10823,
+        "threshold": 1082
+      },
+      "disabilityAmount": 10298,
+      "donationCredit": {
+        "first200Rate": 0.0505,
+        "over200Rate": 0.1116
+      },
+      "dividendTaxCreditRate": 0.1,
+      "benefits": [
+        {
+          "id": "on_care",
+          "name": "Ontario CARE child care tax credit",
+          "onReturn": true,
+          "table": [
+            {
+              "max": 20000,
+              "rate": 0.75
+            },
+            {
+              "max": 22500,
+              "rate": 0.73
+            },
+            {
+              "max": 25000,
+              "rate": 0.71
+            },
+            {
+              "max": 27500,
+              "rate": 0.69
+            },
+            {
+              "max": 30000,
+              "rate": 0.67
+            },
+            {
+              "max": 32500,
+              "rate": 0.65
+            },
+            {
+              "max": 35000,
+              "rate": 0.63
+            },
+            {
+              "max": 37500,
+              "rate": 0.61
+            },
+            {
+              "max": 40000,
+              "rate": 0.59
+            },
+            {
+              "max": 45000,
+              "rate": 0.57
+            },
+            {
+              "max": 50000,
+              "rate": 0.55
+            },
+            {
+              "max": 55000,
+              "rate": 0.53
+            },
+            {
+              "max": 60000,
+              "rate": 0.51
+            },
+            {
+              "max": 63600,
+              "rate": 0.49
+            },
+            {
+              "max": 67200,
+              "rate": 0.47
+            },
+            {
+              "max": 70800,
+              "rate": 0.45
+            },
+            {
+              "max": 74400,
+              "rate": 0.43
+            },
+            {
+              "max": 78000,
+              "rate": 0.41
+            },
+            {
+              "max": 81600,
+              "rate": 0.39
+            },
+            {
+              "max": 85200,
+              "rate": 0.37
+            },
+            {
+              "max": 88800,
+              "rate": 0.35
+            },
+            {
+              "max": 92400,
+              "rate": 0.33
+            },
+            {
+              "max": 96000,
+              "rate": 0.31
+            },
+            {
+              "max": 99600,
+              "rate": 0.29
+            },
+            {
+              "max": 103200,
+              "rate": 0.27
+            },
+            {
+              "max": 106800,
+              "rate": 0.25
+            },
+            {
+              "max": 110400,
+              "rate": 0.23
+            },
+            {
+              "max": 114000,
+              "rate": 0.21
+            },
+            {
+              "max": 117600,
+              "rate": 0.19
+            },
+            {
+              "max": 121200,
+              "rate": 0.17
+            },
+            {
+              "max": 124800,
+              "rate": 0.15
+            },
+            {
+              "max": 128400,
+              "rate": 0.13
+            },
+            {
+              "max": 132000,
+              "rate": 0.11
+            },
+            {
+              "max": 135600,
+              "rate": 0.09
+            },
+            {
+              "max": 139200,
+              "rate": 0.07
+            },
+            {
+              "max": 142800,
+              "rate": 0.05
+            },
+            {
+              "max": 146400,
+              "rate": 0.03
+            },
+            {
+              "max": 150000,
+              "rate": 0.01
+            },
+            {
+              "max": null,
+              "rate": 0.0
+            }
+          ]
+        },
+        {
+          "id": "on_ostc",
+          "name": "Ontario sales tax credit (OTB)",
+          "perPerson": 378,
+          "singleThreshold": 29047,
+          "familyThreshold": 36309,
+          "rate": 0.04
+        },
+        {
+          "id": "on_ocb",
+          "name": "Ontario child benefit",
+          "perChild": 1760,
+          "threshold": 26865,
+          "rate": 0.08
+        }
+      ],
+      "notes": [],
+      "surtax": [
+        {
+          "threshold": 5710,
+          "rate": 0.2
+        },
+        {
+          "threshold": 7307,
+          "rate": 0.36
+        }
+      ],
+      "healthPremium": [
+        {
+          "from": 20000,
+          "rate": 0.06,
+          "base": 0,
+          "max": 300
+        },
+        {
+          "from": 36000,
+          "rate": 0.06,
+          "base": 300,
+          "max": 450
+        },
+        {
+          "from": 48000,
+          "rate": 0.25,
+          "base": 450,
+          "max": 600
+        },
+        {
+          "from": 72000,
+          "rate": 0.25,
+          "base": 600,
+          "max": 750
+        },
+        {
+          "from": 200000,
+          "rate": 0.25,
+          "base": 750,
+          "max": 900
+        }
+      ],
+      "taxReduction": {
+        "type": "ontario",
+        "basic": 294,
+        "perDependant": 544
+      }
     },
-    "ei": {
-      "maxInsurableEarnings": 65700,
-      "rate": 0.0164
+    "BC": {
+      "name": "British Columbia",
+      "brackets": [
+        {
+          "upTo": 49279,
+          "rate": 0.0506
+        },
+        {
+          "upTo": 98560,
+          "rate": 0.077
+        },
+        {
+          "upTo": 113158,
+          "rate": 0.105
+        },
+        {
+          "upTo": 137407,
+          "rate": 0.1229
+        },
+        {
+          "upTo": 186306,
+          "rate": 0.147
+        },
+        {
+          "upTo": 259829,
+          "rate": 0.168
+        },
+        {
+          "upTo": null,
+          "rate": 0.205
+        }
+      ],
+      "lowestRate": 0.0506,
+      "basicPersonalAmount": {
+        "base": 12932
+      },
+      "spouseAmount": {
+        "max": 11073,
+        "threshold": 1108
+      },
+      "disabilityAmount": 9699,
+      "donationCredit": {
+        "first200Rate": 0.0506,
+        "over200Rate": 0.168,
+        "topRate": 0.205,
+        "topRateIncomeThreshold": 259829
+      },
+      "dividendTaxCreditRate": 0.12,
+      "benefits": [
+        {
+          "id": "bc_family",
+          "name": "B.C. family benefit",
+          "amounts": [
+            1750,
+            1100,
+            900
+          ],
+          "minimums": [
+            775,
+            750,
+            725
+          ],
+          "threshold": 30176,
+          "secondThreshold": 96562,
+          "rate": 0.04
+        }
+      ],
+      "notes": [],
+      "taxReduction": {
+        "type": "linear",
+        "basic": 562,
+        "threshold": 25020,
+        "rate": 0.0356,
+        "incomeBasis": "individual"
+      }
+    },
+    "AB": {
+      "name": "Alberta",
+      "brackets": [
+        {
+          "upTo": 60000,
+          "rate": 0.08
+        },
+        {
+          "upTo": 151234,
+          "rate": 0.1
+        },
+        {
+          "upTo": 181481,
+          "rate": 0.12
+        },
+        {
+          "upTo": 241974,
+          "rate": 0.13
+        },
+        {
+          "upTo": 362961,
+          "rate": 0.14
+        },
+        {
+          "upTo": null,
+          "rate": 0.15
+        }
+      ],
+      "lowestRate": 0.08,
+      "basicPersonalAmount": {
+        "base": 22323
+      },
+      "spouseAmount": {
+        "max": 22323,
+        "threshold": 0
+      },
+      "disabilityAmount": 17219,
+      "donationCredit": {
+        "first200Rate": 0.6,
+        "over200Rate": 0.21
+      },
+      "dividendTaxCreditRate": 0.0812,
+      "benefits": [
+        {
+          "id": "ab_acfb",
+          "name": "Alberta child and family benefit",
+          "base": [
+            1529,
+            764,
+            764,
+            764
+          ],
+          "working": [
+            782,
+            712,
+            426,
+            141
+          ],
+          "workingPhaseInBase": 2760,
+          "workingPhaseInRate": 0.15,
+          "baseThreshold": 28116,
+          "workingThreshold": 47115,
+          "workingReductionRate": 0.15
+        }
+      ],
+      "notes": [
+        "ACFB base component is modelled as phasing out linearly between $28,116 and $47,115 (estimate: published reduction rates not confirmed).",
+        "Alberta's 2025 supplemental credit (for credits above $60,000) is not modelled."
+      ]
+    },
+    "SK": {
+      "name": "Saskatchewan",
+      "brackets": [
+        {
+          "upTo": 53463,
+          "rate": 0.105
+        },
+        {
+          "upTo": 152750,
+          "rate": 0.125
+        },
+        {
+          "upTo": null,
+          "rate": 0.145
+        }
+      ],
+      "lowestRate": 0.105,
+      "basicPersonalAmount": {
+        "base": 19491
+      },
+      "spouseAmount": {
+        "max": 19491,
+        "threshold": 1949
+      },
+      "disabilityAmount": 13986,
+      "donationCredit": {
+        "first200Rate": 0.105,
+        "over200Rate": 0.145
+      },
+      "dividendTaxCreditRate": 0.11,
+      "benefits": [
+        {
+          "id": "sk_litc",
+          "name": "Saskatchewan low-income tax credit",
+          "adult": 460,
+          "spouse": 460,
+          "perChild": 181,
+          "maxChildren": 2,
+          "threshold": 39345,
+          "rate": 0.03
+        }
+      ],
+      "notes": []
+    },
+    "MB": {
+      "name": "Manitoba",
+      "brackets": [
+        {
+          "upTo": 47000,
+          "rate": 0.108
+        },
+        {
+          "upTo": 100000,
+          "rate": 0.1275
+        },
+        {
+          "upTo": null,
+          "rate": 0.174
+        }
+      ],
+      "lowestRate": 0.108,
+      "basicPersonalAmount": {
+        "base": 15780,
+        "min": 0,
+        "phaseoutStart": 200000,
+        "phaseoutEnd": 400000
+      },
+      "spouseAmount": {
+        "max": 9134,
+        "threshold": 0
+      },
+      "disabilityAmount": 6180,
+      "donationCredit": {
+        "first200Rate": 0.108,
+        "over200Rate": 0.174
+      },
+      "dividendTaxCreditRate": 0.08,
+      "benefits": [],
+      "notes": [
+        "Manitoba family tax benefit and Manitoba child benefit are not modelled."
+      ]
+    },
+    "NB": {
+      "name": "New Brunswick",
+      "brackets": [
+        {
+          "upTo": 51306,
+          "rate": 0.094
+        },
+        {
+          "upTo": 102614,
+          "rate": 0.14
+        },
+        {
+          "upTo": 190060,
+          "rate": 0.16
+        },
+        {
+          "upTo": null,
+          "rate": 0.195
+        }
+      ],
+      "lowestRate": 0.094,
+      "basicPersonalAmount": {
+        "base": 13396
+      },
+      "spouseAmount": {
+        "max": 10499,
+        "threshold": 1051
+      },
+      "disabilityAmount": 10010,
+      "donationCredit": {
+        "first200Rate": 0.094,
+        "over200Rate": 0.1795
+      },
+      "dividendTaxCreditRate": 0.14,
+      "benefits": [
+        {
+          "id": "nb_hstc",
+          "name": "New Brunswick harmonized sales tax credit",
+          "adult": 300,
+          "spouse": 300,
+          "perChild": 100,
+          "threshold": 35000,
+          "rate": 0.02
+        }
+      ],
+      "notes": [
+        "Low-income tax reduction amount/threshold are estimates (2024 values indexed; 2025 family maximum $1,604).",
+        "New Brunswick child tax benefit is not modelled."
+      ],
+      "taxReduction": {
+        "type": "linear",
+        "basic": 802,
+        "spouse": 802,
+        "threshold": 21918,
+        "rate": 0.03,
+        "incomeBasis": "family"
+      }
+    },
+    "NS": {
+      "name": "Nova Scotia",
+      "brackets": [
+        {
+          "upTo": 29590,
+          "rate": 0.0879
+        },
+        {
+          "upTo": 59180,
+          "rate": 0.1495
+        },
+        {
+          "upTo": 93000,
+          "rate": 0.1667
+        },
+        {
+          "upTo": 150000,
+          "rate": 0.175
+        },
+        {
+          "upTo": null,
+          "rate": 0.21
+        }
+      ],
+      "lowestRate": 0.0879,
+      "basicPersonalAmount": {
+        "base": 11744
+      },
+      "spouseAmount": {
+        "max": 11744,
+        "threshold": 874
+      },
+      "disabilityAmount": 7341,
+      "donationCredit": {
+        "first200Rate": 0.0879,
+        "over200Rate": 0.21
+      },
+      "dividendTaxCreditRate": 0.0885,
+      "benefits": [
+        {
+          "id": "ns_altc",
+          "name": "Nova Scotia affordable living tax credit",
+          "adult": 255,
+          "perChild": 60,
+          "threshold": 30000,
+          "rate": 0.05
+        },
+        {
+          "id": "ns_cb",
+          "name": "Nova Scotia child benefit",
+          "perChild": 1525,
+          "fullBelow": 26000,
+          "zeroAt": 34000
+        }
+      ],
+      "notes": [
+        "Nova Scotia child benefit modelled as a linear phase-out between $26,000 and $34,000 (estimate)."
+      ],
+      "taxReduction": {
+        "type": "linear",
+        "basic": 300,
+        "spouse": 300,
+        "perChild": 165,
+        "threshold": 15000,
+        "rate": 0.05,
+        "incomeBasis": "family"
+      }
+    },
+    "PE": {
+      "name": "Prince Edward Island",
+      "brackets": [
+        {
+          "upTo": 33328,
+          "rate": 0.095
+        },
+        {
+          "upTo": 64656,
+          "rate": 0.1347
+        },
+        {
+          "upTo": 105000,
+          "rate": 0.166
+        },
+        {
+          "upTo": 140000,
+          "rate": 0.1762
+        },
+        {
+          "upTo": null,
+          "rate": 0.19
+        }
+      ],
+      "lowestRate": 0.095,
+      "basicPersonalAmount": {
+        "base": 14650
+      },
+      "spouseAmount": {
+        "max": 12443,
+        "threshold": 1244
+      },
+      "disabilityAmount": 6890,
+      "donationCredit": {
+        "first200Rate": 0.095,
+        "over200Rate": 0.19
+      },
+      "dividendTaxCreditRate": 0.105,
+      "benefits": [
+        {
+          "id": "pe_ieb",
+          "name": "PEI Island essentials benefit",
+          "single": {
+            "max": 310,
+            "min": 175,
+            "from": 95000,
+            "to": 108500
+          },
+          "family": {
+            "max": 365,
+            "min": 175,
+            "from": 95000,
+            "to": 114000
+          }
+        },
+        {
+          "id": "pe_cb",
+          "name": "PEI child benefit",
+          "tiers": [
+            {
+              "below": 45000,
+              "perChild": 410
+            },
+            {
+              "below": 80000,
+              "perChild": 290
+            }
+          ]
+        }
+      ],
+      "notes": [],
+      "taxReduction": {
+        "type": "linear",
+        "basic": 350,
+        "spouse": 350,
+        "perChild": 300,
+        "threshold": 22650,
+        "rate": 0.05,
+        "incomeBasis": "family"
+      }
+    },
+    "NL": {
+      "name": "Newfoundland and Labrador",
+      "brackets": [
+        {
+          "upTo": 44192,
+          "rate": 0.087
+        },
+        {
+          "upTo": 88382,
+          "rate": 0.145
+        },
+        {
+          "upTo": 157792,
+          "rate": 0.158
+        },
+        {
+          "upTo": 220910,
+          "rate": 0.178
+        },
+        {
+          "upTo": 282214,
+          "rate": 0.198
+        },
+        {
+          "upTo": 564429,
+          "rate": 0.208
+        },
+        {
+          "upTo": 1128858,
+          "rate": 0.213
+        },
+        {
+          "upTo": null,
+          "rate": 0.218
+        }
+      ],
+      "lowestRate": 0.087,
+      "basicPersonalAmount": {
+        "base": 11067
+      },
+      "spouseAmount": {
+        "max": 9043,
+        "threshold": 905
+      },
+      "disabilityAmount": 7467,
+      "donationCredit": {
+        "first200Rate": 0.087,
+        "over200Rate": 0.218
+      },
+      "dividendTaxCreditRate": 0.063,
+      "benefits": [
+        {
+          "id": "nl_is",
+          "name": "Newfoundland and Labrador income supplement",
+          "basic": 254,
+          "phaseInExtra": 266,
+          "phaseInBase": 15000,
+          "phaseInRate": 0.0532,
+          "spouse": 69,
+          "perChild": 231,
+          "threshold": 40000,
+          "rate": 0.09
+        },
+        {
+          "id": "nl_cb",
+          "name": "Newfoundland and Labrador child benefit",
+          "amounts": [
+            1888,
+            2002,
+            2150,
+            2310
+          ],
+          "fullBelow": 20397,
+          "zeroAt": 38193
+        }
+      ],
+      "notes": [
+        "NL income supplement uses 2025 benefit-year amounts; its phase-out rate (9%) is an estimate.",
+        "NL child benefit modelled as a linear phase-out between $20,397 and $38,193 (estimate)."
+      ],
+      "taxReduction": {
+        "type": "linear",
+        "basic": 997,
+        "spouse": 557,
+        "threshold": 23928,
+        "rate": 0.16,
+        "incomeBasis": "family"
+      }
+    },
+    "YT": {
+      "name": "Yukon",
+      "brackets": [
+        {
+          "upTo": 57375,
+          "rate": 0.064
+        },
+        {
+          "upTo": 114750,
+          "rate": 0.09
+        },
+        {
+          "upTo": 177882,
+          "rate": 0.109
+        },
+        {
+          "upTo": 500000,
+          "rate": 0.128
+        },
+        {
+          "upTo": null,
+          "rate": 0.15
+        }
+      ],
+      "lowestRate": 0.064,
+      "basicPersonalAmount": {
+        "followsFederal": true
+      },
+      "spouseAmount": {
+        "max": 16129,
+        "threshold": 0,
+        "followsFederal": true
+      },
+      "disabilityAmount": 10138,
+      "donationCredit": {
+        "first200Rate": 0.064,
+        "over200Rate": 0.128
+      },
+      "dividendTaxCreditRate": 0.1202,
+      "benefits": [
+        {
+          "id": "yt_cb",
+          "name": "Yukon child benefit",
+          "perChild": 966,
+          "threshold": 35000,
+          "rateOneChild": 0.025,
+          "rateMoreChildren": 0.05
+        }
+      ],
+      "notes": [
+        "Yukon low-income family tax credit is not modelled."
+      ],
+      "canadaEmploymentAmount": 1471
+    },
+    "NT": {
+      "name": "Northwest Territories",
+      "brackets": [
+        {
+          "upTo": 51964,
+          "rate": 0.059
+        },
+        {
+          "upTo": 103930,
+          "rate": 0.086
+        },
+        {
+          "upTo": 168967,
+          "rate": 0.122
+        },
+        {
+          "upTo": null,
+          "rate": 0.1405
+        }
+      ],
+      "lowestRate": 0.059,
+      "basicPersonalAmount": {
+        "base": 17842
+      },
+      "spouseAmount": {
+        "max": 17842,
+        "threshold": 0
+      },
+      "disabilityAmount": 14469,
+      "donationCredit": {
+        "first200Rate": 0.059,
+        "over200Rate": 0.1405
+      },
+      "dividendTaxCreditRate": 0.115,
+      "benefits": [
+        {
+          "id": "nt_cb",
+          "name": "Northwest Territories child benefit",
+          "under6Monthly": [
+            67.91,
+            122.25,
+            166.41,
+            203.75
+          ],
+          "under6Extra": 30.58,
+          "age6to17Monthly": [
+            54.33,
+            97.83,
+            133.08,
+            163.0
+          ],
+          "age6to17Extra": 24.41,
+          "fullBelow": 30000,
+          "zeroAt": 80000
+        }
+      ],
+      "notes": [
+        "NWT child benefit modelled as a linear phase-out between $30,000 and $80,000 (estimate)."
+      ]
+    },
+    "NU": {
+      "name": "Nunavut",
+      "brackets": [
+        {
+          "upTo": 54707,
+          "rate": 0.04
+        },
+        {
+          "upTo": 109413,
+          "rate": 0.07
+        },
+        {
+          "upTo": 177881,
+          "rate": 0.09
+        },
+        {
+          "upTo": null,
+          "rate": 0.115
+        }
+      ],
+      "lowestRate": 0.04,
+      "basicPersonalAmount": {
+        "base": 19274
+      },
+      "spouseAmount": {
+        "max": 19274,
+        "threshold": 0
+      },
+      "disabilityAmount": 16405,
+      "donationCredit": {
+        "first200Rate": 0.04,
+        "over200Rate": 0.115
+      },
+      "dividendTaxCreditRate": 0.0551,
+      "benefits": [],
+      "notes": [
+        "Nunavut child benefit is not modelled (published amounts conflict)."
+      ]
+    },
+    "QC": {
+      "name": "Quebec",
+      "brackets": [
+        {
+          "upTo": 53255,
+          "rate": 0.14
+        },
+        {
+          "upTo": 106495,
+          "rate": 0.19
+        },
+        {
+          "upTo": 129590,
+          "rate": 0.24
+        },
+        {
+          "upTo": null,
+          "rate": 0.2575
+        }
+      ],
+      "lowestRate": 0.14,
+      "basicPersonalAmount": {
+        "base": 18571
+      },
+      "spouseAmount": {
+        "max": 0,
+        "threshold": 0
+      },
+      "disabilityAmount": 0,
+      "donationCredit": {
+        "first200Rate": 0.2,
+        "over200Rate": 0.24,
+        "topRate": 0.2575,
+        "topRateIncomeThreshold": 129590
+      },
+      "dividendTaxCreditRate": 0.117,
+      "benefits": [],
+      "notes": [
+        "Quebec is simplified: TP-1 is approximated with Quebec brackets, the basic, living-alone and donation credits, the deduction for workers and the dividend credit. Quebec disability, spouse-transfer and medical credits are not modelled.",
+        "Federal tax for Quebec residents is reduced by the 16.5% Quebec abatement; QPP/QPIP and the reduced EI rate replace CPP/EI.",
+        "The CWB uses the general federal parameters; Quebec, Alberta and Nunavut have modified CWB amounts.",
+        "Family allowance reduction rate (4%) and single-parent threshold are estimates."
+      ],
+      "quebec": {
+        "livingAloneAmount": 2128,
+        "workerDeductionRate": 0.06,
+        "workerDeductionMax": 1420,
+        "workPremium": {
+          "singleRate": 0.116,
+          "coupleRate": 0.116,
+          "singleParentRate": 0.3,
+          "coupleWithChildrenRate": 0.25,
+          "singleExclusion": 2400,
+          "coupleExclusion": 3600,
+          "singleThreshold": 12620,
+          "coupleThreshold": 19534,
+          "reductionRate": 0.1
+        },
+        "solidarity": {
+          "_note": "July 2026–June 2027 amounts (based on 2025 return).",
+          "qstBasic": 363,
+          "qstSpouse": 363,
+          "qstLivingAlone": 172,
+          "housingCouple": 906,
+          "housingSingle": 746,
+          "housingPerChild": 158,
+          "threshold": 43195,
+          "rate": 0.06
+        },
+        "familyAllowance": {
+          "_note": "Calendar 2026 amounts (based on 2025 income).",
+          "twoParentMax": 3068,
+          "twoParentMin": 1221,
+          "singleParentMax": 4145,
+          "singleParentMin": 1651,
+          "coupleThreshold": 60398,
+          "singleParentThreshold": 44000,
+          "rate": 0.04
+        }
+      }
     }
   }
 }

@@ -41,7 +41,7 @@ function mk(id: string, name: string, jurisdiction: 'Federal' | 'Ontario', mecha
 describe('seed scenarios (deterministic expected outputs)', () => {
   it('Scenario A: low income single, eligible CWB', () => {
     const req: IndividualRequest = {
-      province: 'Ontario',
+      province: 'ON',
       age: 25,
       maritalStatus: 'single',
       income: { employment: 20000, other: 0, capitalGains: 0, eligibleDividends: 0 },
@@ -71,7 +71,7 @@ describe('seed scenarios (deterministic expected outputs)', () => {
 
   it('Scenario B: mid income single with RRSP + donations', () => {
     const req: IndividualRequest = {
-      province: 'Ontario',
+      province: 'ON',
       age: 35,
       maritalStatus: 'single',
       income: { employment: 90000, other: 1000, capitalGains: 5000, eligibleDividends: 0 },
@@ -92,12 +92,12 @@ describe('seed scenarios (deterministic expected outputs)', () => {
     const res = calculateFromItems(req, items);
     expect(res.refundOrOwing).toBeCloseTo(7161.9, 2);
     expect(res.taxPayableTotal).toBeCloseTo(14838.1, 2);
-    expect(res.ontario.healthPremium).toBeCloseTo(750, 2);
+    expect(res.provincial.healthPremium).toBeCloseTo(750, 2);
   });
 
   it('Scenario C: family with child care, uses Ontario CARE', () => {
     const req: IndividualRequest = {
-      province: 'Ontario',
+      province: 'ON',
       age: 32,
       maritalStatus: 'married',
       spouseNetIncome: 25000,

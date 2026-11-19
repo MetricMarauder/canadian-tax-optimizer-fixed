@@ -60,7 +60,8 @@
     "requiredInputs": [
       "income"
     ],
-    "params": {}
+    "params": {},
+    "provincial": true
   },
   "Canada employment amount": {
     "prong": "B",
@@ -87,7 +88,8 @@
     "requiredInputs": [
       "credits.hasDisabilityDTC"
     ],
-    "params": {}
+    "params": {},
+    "provincial": true
   },
   "Donations and gifts": {
     "prong": "B",
@@ -114,7 +116,8 @@
     "requiredInputs": [
       "credits.tuitionFees"
     ],
-    "params": {}
+    "params": {},
+    "provincial": true
   },
   "Canada workers benefit": {
     "prong": "C",
@@ -132,7 +135,8 @@
     "requiredInputs": [
       "deductions.childCareExpenses"
     ],
-    "params": {}
+    "params": {},
+    "provincial": true
   },
   "GST/HST credit": {
     "prong": "C",
@@ -151,6 +155,18 @@
     "jurisdiction": "Ontario",
     "requiredInputs": [
       "benefits.includeBenefitsEstimates"
+    ],
+    "params": {
+      "paidSeparately": true
+    },
+    "provincial": true
+  },
+  "Canada child benefit": {
+    "prong": "C",
+    "kind": "refundableCreditOrBenefit",
+    "jurisdiction": "Federal",
+    "requiredInputs": [
+      "deductions.numChildrenUnder7"
     ],
     "params": {
       "paidSeparately": true

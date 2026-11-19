@@ -1,15 +1,7 @@
-import taxConfig from '@/lib/tax/config/2025.json';
 import { taxFromBrackets } from '@/lib/tax/brackets';
-import {
-  computePayroll,
-  formatPct,
-  grossedUpEligibleDividends,
-  ontarioHealthPremium,
-  ontarioSurtax,
-  ontarioTaxReduction,
-  round2,
-  totalIncome,
-} from '@/lib/tax/income';
+import { DEFAULT_YEAR, getConfig, getProvince, type ProvinceCode } from '@/lib/tax/config';
+import { computePayroll, formatPct, grossedUpEligibleDividends, round2, totalIncome } from '@/lib/tax/income';
+import { computeProvincial } from '@/lib/tax/provincial';
 import type {
   AppliedItem,
   ExplanationItem,
@@ -21,38 +13,37 @@ import type {
 } from '@/lib/api/types';
 import type { RuleItem, UserContext } from '@/lib/rules/types';
 import { loadRuleItems } from '@/lib/excel/loadCredits';
-import { runRules } from '@/lib/rules/engine';
-import { estimateChildrenCount, normalizeKey } from '@/lib/rules/implemented';
+import { PROVINCIAL_PLACEHOLDER, runRules } from '@/lib/rules/engine';
+import { estimateChildrenCount, estimateNetIncome, normalizeKey } from '@/lib/rules/implemented';
 
-const EXCEL_PATH = 'ontario_federal_tax_credits_2025.xlsx';
+export const EXCEL_PATH = 'ontario_federal_tax_credits_2025.xlsx';
 
 export type CalculationOverrides = {
+  /** Tax year (defaults to 2025). */
+  year?: number;
+  /** Spouse's employment income, for family working-income tests. */
+  spouseEmploymentIncome?: number;
   credits?: Pick<
     UserContext['credits'],
     | 'disabilityTransferInFederalBase'
     | 'disabilityTransferOutFederalBase'
-    | 'disabilityTransferInOntarioBase'
-    | 'disabilityTransferOutOntarioBase'
+    | 'disabilityTransferInProvincialBase'
+    | 'disabilityTransferOutProvincialBase'
   >;
   benefits?: Pick<
     UserContext['benefits'],
-    | 'cwbClaimBasic'
-    | 'cwbClaimDisability'
-    | 'cwbDisabilityBothEligible'
-    | 'claimGstHstCredit'
-    | 'claimOstc'
-    | 'claimCareCredit'
+    'cwbClaimBasic' | 'cwbClaimDisability' | 'cwbDisabilityBothEligible' | 'claimHouseholdBenefits' | 'claimCareCredit'
   >;
   /** Credits computed outside the rules engine (e.g. the household spouse amount). */
   extraCredits?: {
     federal?: AppliedItem[];
-    ontario?: AppliedItem[];
+    provincial?: AppliedItem[];
   };
   /**
-   * Number of dependants claimed for the Ontario tax reduction. Defaults to the person's own
-   * child counts; the household optimizer gives them to the higher-income spouse.
+   * Dependants claimed for the provincial low-income tax reduction. Defaults to the person's own
+   * child counts; the household optimizer assigns them to one spouse.
    */
-  ontarioTaxReductionDependants?: number;
+  taxReductionDependants?: number;
 };
 
 export function calculate(req: IndividualRequest): ReturnResult {
@@ -71,7 +62,7 @@ export function calculateFromItems(req: IndividualRequest, items: RuleItem[]): R
     taxesWithheld: req.taxesWithheld,
   };
 
-  return calculateTaxFromItems(person, req.maritalStatus, req.spouseNetIncome ?? 0, items);
+  return calculateTaxFromItems(person, req.maritalStatus, req.spouseNetIncome ?? 0, items, { year: req.year });
 }
 
 export function calculateTax(
@@ -84,17 +75,19 @@ export function calculateTax(
   return calculateTaxFromItems(person, maritalStatus, spouseNetIncome, items, overrides);
 }
 
-export function calculateTaxFromItems(
+export function buildContext(
   person: PersonInput,
   maritalStatus: MaritalStatus,
   spouseNetIncome: number,
-  items: RuleItem[],
   overrides?: CalculationOverrides
-): ReturnResult {
-  const ctx: UserContext = {
+): UserContext {
+  return {
+    config: getConfig(overrides?.year ?? DEFAULT_YEAR),
+    province: (person.province ?? 'ON') as ProvinceCode,
     age: person.age,
     maritalStatus,
     spouseNetIncome,
+    spouseEmploymentIncome: overrides?.spouseEmploymentIncome,
     income: person.income,
     deductions: {
       ...person.deductions,
@@ -109,100 +102,92 @@ export function calculateTaxFromItems(
       ...overrides?.benefits,
     },
   };
+}
+
+export function calculateTaxFromItems(
+  person: PersonInput,
+  maritalStatus: MaritalStatus,
+  spouseNetIncome: number,
+  items: RuleItem[],
+  overrides?: CalculationOverrides
+): ReturnResult {
+  const ctx = buildContext(person, maritalStatus, spouseNetIncome, overrides);
+  const cfg = ctx.config;
+  const prov = getProvince(cfg, ctx.province);
+  const isQuebec = ctx.province === 'QC';
 
   const engine = runRules(items, ctx);
   const explanation = engine.explanation;
-  const fedRate = taxConfig.federal.lowestRate;
-  const onRate = taxConfig.ontario.lowestRate;
+  const fedRate = cfg.federal.lowestRate;
 
   // --- Income & deductions ---------------------------------------------------------------
-  const payroll = computePayroll(person.income.employment);
+  const payroll = computePayroll(cfg, person.income.employment, ctx.province);
   const deductionsApplied: AppliedItem[] = [...engine.deductionsApplied];
   if (payroll.cppEnhanced > 0) {
     deductionsApplied.push({
-      name: 'Deduction for CPP enhanced contributions on employment income (estimated)',
+      name: `Deduction for ${isQuebec ? 'QPP' : 'CPP'} enhanced contributions on employment income (estimated)`,
       amount: payroll.cppEnhanced,
       lineForm: 'Line 22215',
       jurisdiction: 'Federal',
       mechanism: 'Deduction',
     });
   }
-  annotate(
-    explanation,
-    'deduction for cpp qpp enhanced contributions on employment income',
-    undefined,
-    payroll.cppEnhanced,
-    'Estimated from employment income (1% enhanced CPP + CPP2).'
-  );
+  annotate(explanation, 'deduction for cpp qpp enhanced contributions on employment income', 'Federal', payroll.cppEnhanced,
+    'Estimated from employment income (1% enhanced contribution + second additional contribution).');
 
   const deductionsTotal = sum(deductionsApplied.map((d) => d.amount));
-  const taxableIncome = round2(Math.max(0, totalIncome(person.income) - deductionsTotal));
-  const grossedUpDividends = grossedUpEligibleDividends(person.income);
+  const taxableIncome = round2(Math.max(0, totalIncome(cfg, person.income) - deductionsTotal));
+  const netIncome = taxableIncome; // no line-25000+ deductions are modelled
+  const grossedUpDividends = grossedUpEligibleDividends(cfg, person.income);
 
   // --- Federal -----------------------------------------------------------------------------
   const federalCredits: AppliedItem[] = engine.federalNonRefundableCredits
     .filter((c) => c.amount > 0)
-    .map((c) => ({
-    name: c.name,
-    amount: c.amount,
-    lineForm: c.lineForm,
-    jurisdiction: 'Federal' as const,
-  }));
-  pushCredit(federalCredits, 'CPP contributions through employment (estimated)', 'Line 30800', 'Federal', payroll.cppBase * fedRate);
-  pushCredit(federalCredits, 'Employment insurance premiums through employment (estimated)', 'Line 31200', 'Federal', payroll.ei * fedRate);
+    .map((c) => ({ name: c.name, amount: c.amount, lineForm: c.lineForm, jurisdiction: 'Federal' }));
+  const pensionPlan = isQuebec ? 'QPP' : 'CPP';
+  pushCredit(federalCredits, `${pensionPlan} contributions through employment (estimated)`, 'Line 30800', payroll.cppBase * fedRate);
+  pushCredit(federalCredits, 'Employment insurance premiums through employment (estimated)', 'Line 31200', payroll.ei * fedRate);
+  pushCredit(federalCredits, 'QPIP premiums through employment (estimated)', 'Line 31205', payroll.qpip * fedRate);
   annotate(explanation, 'cpp qpp contributions through employment', 'Federal', payroll.cppBase * fedRate,
-    `Base CPP $${payroll.cppBase} × ${formatPct(fedRate)} (estimated from employment income).`);
+    `Base ${pensionPlan} $${payroll.cppBase} × ${formatPct(fedRate)} (estimated from employment income).`);
   annotate(explanation, 'employment insurance premiums through employment', 'Federal', payroll.ei * fedRate,
     `EI premiums $${payroll.ei} × ${formatPct(fedRate)} (estimated from employment income).`);
   for (const extra of overrides?.extraCredits?.federal ?? []) federalCredits.push(extra);
 
-  const federalDtc = round2(grossedUpDividends * taxConfig.federal.dividendTaxCredit.eligibleRate);
-  pushCredit(federalCredits, 'Federal dividend tax credit (eligible dividends)', 'Line 40425', 'Federal', federalDtc);
+  const federalDtc = round2(grossedUpDividends * cfg.federal.dividendTaxCredit.eligibleRate);
+  pushCredit(federalCredits, 'Federal dividend tax credit (eligible dividends)', 'Line 40425', federalDtc);
   annotate(explanation, 'federal dividend tax credit', 'Federal', federalDtc,
-    `Grossed-up eligible dividends $${grossedUpDividends} × ${formatPct(taxConfig.federal.dividendTaxCredit.eligibleRate)}.`);
+    `Grossed-up eligible dividends $${grossedUpDividends} × ${formatPct(cfg.federal.dividendTaxCredit.eligibleRate)}.`);
 
-  const fedBefore = taxFromBrackets(taxableIncome, taxConfig.federal.brackets);
+  const fedBefore = taxFromBrackets(taxableIncome, cfg.federal.brackets);
   const fedCreditsTotal = round2(sum(federalCredits.map((c) => c.amount)));
-  const fedAfter = Math.max(0, round2(fedBefore - fedCreditsTotal));
+  const basicFederalTax = Math.max(0, round2(fedBefore - fedCreditsTotal));
+  const quebecAbatement = isQuebec ? round2(basicFederalTax * cfg.federal.quebecAbatement) : 0;
+  const fedAfter = round2(basicFederalTax - quebecAbatement);
 
-  // --- Ontario -----------------------------------------------------------------------------
-  const ontarioCredits: AppliedItem[] = engine.ontarioNonRefundableCredits
-    .filter((c) => c.amount > 0)
-    .map((c) => ({
-    name: c.name,
-    amount: c.amount,
-    lineForm: c.lineForm,
-    jurisdiction: 'Ontario' as const,
-  }));
-  pushCredit(ontarioCredits, 'Ontario CPP contributions credit (estimated)', 'ON428 line 58240', 'Ontario', payroll.cppBase * onRate);
-  pushCredit(ontarioCredits, 'Ontario EI premiums credit (estimated)', 'ON428 line 58300', 'Ontario', payroll.ei * onRate);
-  annotate(explanation, 'cpp qpp contributions', 'Ontario', payroll.cppBase * onRate,
-    `Base CPP $${payroll.cppBase} × ${formatPct(onRate)} (estimated from employment income).`);
-  annotate(explanation, 'employment insurance premiums', 'Ontario', payroll.ei * onRate,
-    `EI premiums $${payroll.ei} × ${formatPct(onRate)} (estimated from employment income).`);
-  for (const extra of overrides?.extraCredits?.ontario ?? []) ontarioCredits.push(extra);
+  // --- Provincial ----------------------------------------------------------------------------
+  const childCareDeduction = deductionsApplied.find((d) => /child care/i.test(d.name))?.amount ?? 0;
+  const afni = round2(estimateNetIncome(ctx) + (maritalStatus === 'single' ? 0 : Math.max(0, spouseNetIncome)));
+  const provincial = computeProvincial({
+    ctx,
+    prov,
+    taxableIncome,
+    netIncome,
+    afni,
+    payroll,
+    grossedUpDividends,
+    childCareDeduction,
+    extraCredits: overrides?.extraCredits?.provincial ?? [],
+    taxReductionDependants: overrides?.taxReductionDependants ?? estimateChildrenCount(ctx),
+  });
+  annotateProvincialRows(explanation, ctx.province, prov.name, provincial.annotations);
 
-  const ontarioDtc = round2(grossedUpDividends * taxConfig.ontario.dividendTaxCredit.eligibleRate);
-  pushCredit(ontarioCredits, 'Ontario dividend tax credit (eligible dividends)', 'ON428 line 61520', 'Ontario', ontarioDtc);
-  annotate(explanation, 'ontario dividend tax credit', 'Ontario', ontarioDtc,
-    `Grossed-up eligible dividends $${grossedUpDividends} × ${formatPct(taxConfig.ontario.dividendTaxCredit.eligibleRate)}.`);
-
-  const onBefore = taxFromBrackets(taxableIncome, taxConfig.ontario.brackets);
-  const onCreditsTotal = round2(sum(ontarioCredits.map((c) => c.amount)));
-  const basicOntarioTax = Math.max(0, round2(onBefore - onCreditsTotal));
-  const surtax = ontarioSurtax(basicOntarioTax);
-  const ontarioTaxBeforeReduction = round2(basicOntarioTax + surtax);
-  const dependants = overrides?.ontarioTaxReductionDependants ?? estimateChildrenCount(ctx);
-  const reduction = ontarioTaxReduction(ontarioTaxBeforeReduction, dependants);
-  annotate(explanation, 'ontario tax reduction', 'Ontario', reduction,
-    `2 × ($${taxConfig.ontario.taxReduction.basic} + ${dependants} × $${taxConfig.ontario.taxReduction.perDependant}) − Ontario tax $${ontarioTaxBeforeReduction}.`);
-  const healthPremium = ontarioHealthPremium(taxableIncome);
-  const onAfter = round2(ontarioTaxBeforeReduction - reduction + healthPremium);
-
-  // --- Totals ------------------------------------------------------------------------------
-  const refundableTotal = round2(sum(engine.refundableCreditsAndBenefitsApplied.map((r) => r.amount)));
-  const benefitsPaidSeparatelyTotal = round2(sum(engine.benefitsPaidSeparately.map((r) => r.amount)));
-  const taxPayableTotal = round2(fedAfter + onAfter);
+  // --- Totals --------------------------------------------------------------------------------
+  const refundableApplied = [...engine.refundableCreditsAndBenefitsApplied, ...provincial.refundable];
+  const benefitsApplied = [...engine.benefitsPaidSeparately, ...provincial.benefits];
+  const refundableTotal = round2(sum(refundableApplied.map((r) => r.amount)));
+  const benefitsPaidSeparatelyTotal = round2(sum(benefitsApplied.map((r) => r.amount)));
+  const taxPayableTotal = round2(fedAfter + provincial.taxPayable);
   const refundOrOwing = round2(person.taxesWithheld - taxPayableTotal + refundableTotal);
 
   const federal: TaxBreakdown = {
@@ -212,18 +197,7 @@ export function calculateTaxFromItems(
     nonRefundableCreditsTotal: fedCreditsTotal,
     taxAfterCredits: fedAfter,
     dividendTaxCredit: federalDtc,
-  };
-
-  const ontario: TaxBreakdown = {
-    taxableIncome,
-    taxBeforeCredits: onBefore,
-    creditsApplied: ontarioCredits,
-    nonRefundableCreditsTotal: onCreditsTotal,
-    taxAfterCredits: onAfter,
-    dividendTaxCredit: ontarioDtc,
-    surtax,
-    ontarioTaxReduction: reduction,
-    healthPremium,
+    ...(isQuebec ? { quebecAbatement } : {}),
   };
 
   return {
@@ -232,29 +206,37 @@ export function calculateTaxFromItems(
     taxPayableTotal,
     refundableCreditsAndBenefitsTotal: refundableTotal,
     benefitsPaidSeparatelyTotal,
-    benefitsPaidSeparately: engine.benefitsPaidSeparately,
+    benefitsPaidSeparately: benefitsApplied,
     payroll: {
       cppContributions: payroll.cppTotal,
       cppEnhancedDeduction: payroll.cppEnhanced,
       eiPremiums: payroll.ei,
+      qpipPremiums: payroll.qpip,
     },
     federal,
-    ontario,
+    provincial: {
+      province: ctx.province,
+      name: prov.name,
+      notes: prov.notes ?? [],
+      taxableIncome: provincial.taxableIncome,
+      taxBeforeCredits: provincial.taxBeforeCredits,
+      creditsApplied: provincial.credits,
+      nonRefundableCreditsTotal: provincial.nonRefundableCreditsTotal,
+      taxAfterCredits: provincial.taxPayable,
+      dividendTaxCredit: provincial.dividendTaxCredit,
+      surtax: provincial.surtax,
+      taxReduction: provincial.taxReduction,
+      healthPremium: provincial.healthPremium,
+    },
     deductionsApplied,
-    refundableCreditsAndBenefitsApplied: engine.refundableCreditsAndBenefitsApplied,
+    refundableCreditsAndBenefitsApplied: refundableApplied,
     explanation,
   };
 }
 
-function pushCredit(
-  list: AppliedItem[],
-  name: string,
-  lineForm: string,
-  jurisdiction: 'Federal' | 'Ontario',
-  amount: number
-) {
+function pushCredit(list: AppliedItem[], name: string, lineForm: string, amount: number) {
   const rounded = round2(amount);
-  if (rounded > 0) list.push({ name, amount: rounded, lineForm, jurisdiction });
+  if (rounded > 0) list.push({ name, amount: rounded, lineForm, jurisdiction: 'Federal' });
 }
 
 /**
@@ -275,6 +257,35 @@ function annotate(
     row.applied = rounded > 0;
     row.amountApplied = rounded;
     row.reason = rounded > 0 ? reason : `Not applicable for these inputs. ${reason}`;
+  }
+}
+
+/** Fills in the catalog's provincial (Ontario) rows from the provincial calculation. */
+function annotateProvincialRows(
+  explanation: ExplanationItem[],
+  province: ProvinceCode,
+  provinceName: string,
+  annotations: { key: string; amount: number; reason: string }[]
+) {
+  for (const row of explanation) {
+    if (row.reason !== PROVINCIAL_PLACEHOLDER) continue;
+    if (province !== 'ON') {
+      row.applied = false;
+      row.amountApplied = 0;
+      row.reason = `Ontario-only item — not applicable for ${provinceName}. ${provinceName} amounts are shown in the provincial breakdown.`;
+      continue;
+    }
+    const key = normalizeKey(row.name);
+    const match = annotations.find((a) => a.key === key);
+    if (match) {
+      row.applied = match.amount > 0;
+      row.amountApplied = match.amount;
+      row.reason = match.amount > 0 ? match.reason : `Not applicable for these inputs. ${match.reason}`;
+    } else if (key.includes('tuition')) {
+      row.reason = 'Ontario has no tuition credit for current-year fees (eliminated in 2017); pre-2017 carryforwards are not modelled.';
+    } else {
+      row.reason = 'Not yet modelled for Ontario.';
+    }
   }
 }
 

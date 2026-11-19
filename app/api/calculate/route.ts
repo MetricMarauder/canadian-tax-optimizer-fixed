@@ -14,7 +14,12 @@ export async function POST(req: Request) {
 
   try {
     const parsed = CalculateRequestSchema.parse(json);
-    const out: CalculateResponse = calculateOptimizedHousehold(parsed);
+    // The household's province applies to both returns (residence on December 31).
+    const out: CalculateResponse = calculateOptimizedHousehold({
+      ...parsed,
+      taxpayer: { ...parsed.taxpayer, province: parsed.province },
+      spouse: parsed.spouse ? { ...parsed.spouse, province: parsed.province } : undefined,
+    });
     return NextResponse.json(out);
   } catch (e: any) {
     if (e instanceof ZodError) {

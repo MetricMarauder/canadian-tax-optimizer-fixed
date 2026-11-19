@@ -1,4 +1,3 @@
-import taxConfig from '@/lib/tax/config/2025.json';
 import type { MappingFn, RuleResult, UserContext } from '@/lib/rules/types';
 import { computePayroll, formatPct, totalIncome } from '@/lib/tax/income';
 
@@ -45,7 +44,7 @@ export const IMPLEMENTED_RULES: Record<string, MappingFn> = {
     return applied(amt, 'Union/professional dues deduction applied.', 'No union/professional dues entered.', 'A', 'deduction');
   },
   'child care expenses': (ctx) => {
-    const caps = taxConfig.deductions.childCareCaps;
+    const caps = ctx.config.deductions.childCareCaps;
     const capTotal =
       ctx.deductions.numChildrenUnder7 * caps.under7 +
       ctx.deductions.numChildren7to16 * caps.age7to16 +
@@ -58,7 +57,7 @@ export const IMPLEMENTED_RULES: Record<string, MappingFn> = {
       return applied(0, '', 'Child care expenses entered, but no eligible children (enter child counts).', 'A', 'deduction');
     }
     // Line 21400 is also limited to 2/3 of the claimant's earned income.
-    const earnedIncomeCap = round2(Math.max(0, ctx.income.employment) * taxConfig.deductions.childCareEarnedIncomeFraction);
+    const earnedIncomeCap = round2(Math.max(0, ctx.income.employment) * ctx.config.deductions.childCareEarnedIncomeFraction);
     const allowed = round2(Math.min(claimed, capTotal, earnedIncomeCap));
     const limitedBy =
       allowed === claimed ? '' : allowed === earnedIncomeCap ? ` (limited to 2/3 of earned income, $${earnedIncomeCap})` : ` (capped at $${capTotal} based on child counts)`;
@@ -71,7 +70,7 @@ export const IMPLEMENTED_RULES: Record<string, MappingFn> = {
     );
   },
   'basic personal amount': (ctx) => {
-    const cfg = taxConfig.federal.basicPersonalAmount;
+    const cfg = ctx.config.federal.basicPersonalAmount;
     const netIncome = estimateNetIncome(ctx);
     const base = cfg.base;
     const min = cfg.min;
@@ -85,22 +84,17 @@ export const IMPLEMENTED_RULES: Record<string, MappingFn> = {
       bpa = base - frac * (base - min);
     }
 
-    const credit = round2(bpa * taxConfig.federal.lowestRate);
-    return { applied: true, amount: credit, reason: `Federal BPA base $${round2(bpa)} × ${formatPct(taxConfig.federal.lowestRate)}.`, prong: 'B', kind: 'nonRefundableCredit' };
-  },
-  'ontario basic personal amount': (ctx) => {
-    const base = taxConfig.ontario.basicPersonalAmount;
-    const credit = round2(base * taxConfig.ontario.lowestRate);
-    return { applied: true, amount: credit, reason: `Ontario BPA $${base} × ${formatPct(taxConfig.ontario.lowestRate)}.`, prong: 'B', kind: 'nonRefundableCredit' };
+    const credit = round2(bpa * ctx.config.federal.lowestRate);
+    return { applied: true, amount: credit, reason: `Federal BPA base $${round2(bpa)} × ${formatPct(ctx.config.federal.lowestRate)}.`, prong: 'B', kind: 'nonRefundableCredit' };
   },
   'canada employment amount': (ctx) => {
-    const max = taxConfig.federal.canadaEmploymentAmountMax;
+    const max = ctx.config.federal.canadaEmploymentAmountMax;
     const base = Math.min(Math.max(0, ctx.income.employment), max);
-    const credit = round2(base * taxConfig.federal.lowestRate);
-    return applied(credit, `Employment amount $${round2(base)} × ${formatPct(taxConfig.federal.lowestRate)}.`, 'No employment income.', 'B', 'nonRefundableCredit');
+    const credit = round2(base * ctx.config.federal.lowestRate);
+    return applied(credit, `Employment amount $${round2(base)} × ${formatPct(ctx.config.federal.lowestRate)}.`, 'No employment income.', 'B', 'nonRefundableCredit');
   },
   'disability amount': (ctx) => {
-    const base = taxConfig.federal.disabilityAmount;
+    const base = ctx.config.federal.disabilityAmount;
     const selfBase = ctx.credits.hasDisabilityDTC ? base : 0;
     const transferOut = Math.max(0, Math.min(selfBase, ctx.credits.disabilityTransferOutFederalBase ?? 0));
     const transferIn = Math.max(0, ctx.credits.disabilityTransferInFederalBase ?? 0);
@@ -108,21 +102,8 @@ export const IMPLEMENTED_RULES: Record<string, MappingFn> = {
     if (totalBase <= 0) {
       return { applied: false, amount: 0, reason: 'DTC not selected / no transferable amount.', prong: 'B', kind: 'nonRefundableCredit' };
     }
-    const credit = round2(totalBase * taxConfig.federal.lowestRate);
-    const reason = `Federal disability amount base $${round2(totalBase)} × ${formatPct(taxConfig.federal.lowestRate)}.`;
-    return { applied: true, amount: credit, reason, prong: 'B', kind: 'nonRefundableCredit' };
-  },
-  'ontario disability amount': (ctx) => {
-    const base = taxConfig.ontario.disabilityAmount;
-    const selfBase = ctx.credits.hasDisabilityDTC ? base : 0;
-    const transferOut = Math.max(0, Math.min(selfBase, ctx.credits.disabilityTransferOutOntarioBase ?? 0));
-    const transferIn = Math.max(0, ctx.credits.disabilityTransferInOntarioBase ?? 0);
-    const totalBase = Math.max(0, selfBase - transferOut) + transferIn;
-    if (totalBase <= 0) {
-      return { applied: false, amount: 0, reason: 'DTC not selected / no transferable amount.', prong: 'B', kind: 'nonRefundableCredit' };
-    }
-    const credit = round2(totalBase * taxConfig.ontario.lowestRate);
-    const reason = `Ontario disability amount base $${round2(totalBase)} × ${formatPct(taxConfig.ontario.lowestRate)}.`;
+    const credit = round2(totalBase * ctx.config.federal.lowestRate);
+    const reason = `Federal disability amount base $${round2(totalBase)} × ${formatPct(ctx.config.federal.lowestRate)}.`;
     return { applied: true, amount: credit, reason, prong: 'B', kind: 'nonRefundableCredit' };
   },
   'donations and gifts': (ctx) => {
@@ -130,34 +111,23 @@ export const IMPLEMENTED_RULES: Record<string, MappingFn> = {
     if (donations <= 0) {
       return { applied: false, amount: 0, reason: 'No donations entered.', prong: 'B', kind: 'nonRefundableCredit' };
     }
-    const { federal: fedCredit, ontario: onCredit } = computeDonationCredits(ctx);
-
-    // Engine splits by jurisdiction later; we return total and label reason.
-    return { applied: true, amount: round2(fedCredit + onCredit), reason: `Donations credit (Fed $${fedCredit} + ON $${onCredit}).`, prong: 'B', kind: 'nonRefundableCredit' };
+    const fedCredit = computeFederalDonationCredit(ctx);
+    return { applied: true, amount: fedCredit, reason: `Federal donations credit $${fedCredit}.`, prong: 'B', kind: 'nonRefundableCredit' };
   },
   'tuition amount': (ctx) => {
     const tuition = Math.max(0, ctx.credits.tuitionFees);
     if (tuition <= 0) {
       return { applied: false, amount: 0, reason: 'No tuition fees entered.', prong: 'B', kind: 'nonRefundableCredit' };
     }
-    const credit = round2(tuition * taxConfig.federal.lowestRate);
+    const credit = round2(tuition * ctx.config.federal.lowestRate);
     return applied(
       credit,
-      `Federal tuition credit $${round2(tuition)} × ${formatPct(taxConfig.federal.lowestRate)}.`,
+      `Federal tuition credit $${round2(tuition)} × ${formatPct(ctx.config.federal.lowestRate)}.`,
       'No tuition fees entered.',
       'B',
       'nonRefundableCredit'
     );
   },
-  'ontario tuition amount': () => ({
-    // Ontario eliminated its tuition and education credits after September 4, 2017. Only
-    // unused amounts carried forward from before then can be claimed (not modelled here).
-    applied: false,
-    amount: 0,
-    reason: 'Ontario no longer has a tuition credit for current-year fees (eliminated in 2017); pre-2017 carryforwards are not modelled.',
-    prong: 'B',
-    kind: 'nonRefundableCredit',
-  }),
   'canada workers benefit': (ctx) => {
     const claimBasic = ctx.benefits.cwbClaimBasic ?? ctx.benefits.cwbEligible;
     const claimDisability = ctx.benefits.cwbClaimDisability ?? ctx.benefits.cwbDisabilityEligible;
@@ -165,16 +135,17 @@ export const IMPLEMENTED_RULES: Record<string, MappingFn> = {
       return { applied: false, amount: 0, reason: 'CWB not selected / not eligible.', prong: 'C', kind: 'refundableCreditOrBenefit' };
     }
 
-    const cfg = taxConfig.benefits.cwb;
+    const cfg = ctx.config.benefits.cwb;
     const isFamily = ctx.maritalStatus !== 'single';
     const hasChildren = estimateChildrenCount(ctx) > 0;
     if (ctx.age < cfg.minimumAge && !isFamily && !hasChildren) {
       return { applied: false, amount: 0, reason: `CWB requires age ${cfg.minimumAge}+ (or a spouse/eligible dependant).`, prong: 'C', kind: 'refundableCreditOrBenefit' };
     }
     const ani = estimateAdjustedFamilyNetIncome(ctx);
-    // Working income: employment income only (self-employment is not modelled; for couples the
-    // spouse's working income is not available here, so this is conservative).
-    const workingIncome = Math.max(0, ctx.income.employment);
+    // Working income: employment income (self-employment is not modelled). For couples, the CWB
+    // uses family working income.
+    const workingIncome =
+      Math.max(0, ctx.income.employment) + (isFamily ? Math.max(0, ctx.spouseEmploymentIncome ?? 0) : 0);
 
     let base = 0;
     if (ctx.benefits.cwbEligible && claimBasic) {
@@ -209,39 +180,15 @@ export const IMPLEMENTED_RULES: Record<string, MappingFn> = {
       'refundableCreditOrBenefit'
     );
   },
-  'ontario care child care tax credit': (ctx) => {
-    if (!ctx.benefits.includeBenefitsEstimates) {
-      return { applied: false, amount: 0, reason: 'Benefit estimates disabled.', prong: 'C', kind: 'refundableCreditOrBenefit' };
-    }
-    if (ctx.benefits.claimCareCredit === false) {
-      return { applied: false, amount: 0, reason: 'CARE claim set to other spouse.', prong: 'C', kind: 'refundableCreditOrBenefit' };
-    }
-    const childCareDeduction = IMPLEMENTED_RULES['child care expenses'](ctx).amount;
-    if (childCareDeduction <= 0) {
-      return { applied: false, amount: 0, reason: 'No child care deduction amount (line 21400).', prong: 'C', kind: 'refundableCreditOrBenefit' };
-    }
-
-    const ani = estimateAdjustedFamilyNetIncome(ctx);
-    const rate = lookupCareRate(ani);
-    const credit = round2(childCareDeduction * rate);
-
-    return applied(
-      credit,
-      `Ontario CARE credit rate ${(rate * 100).toFixed(0)}% × child care deduction $${round2(childCareDeduction)}.`,
-      'Ontario CARE not payable at this income / inputs.',
-      'C',
-      'refundableCreditOrBenefit'
-    );
-  },
   'gst hst credit': (ctx) => {
     if (!ctx.benefits.includeBenefitsEstimates) {
       return { applied: false, amount: 0, reason: 'Benefit estimates disabled.', prong: 'C', kind: 'refundableCreditOrBenefit' };
     }
-    if (ctx.benefits.claimGstHstCredit === false) {
-      return { applied: false, amount: 0, reason: 'GST/HST credit claimed by spouse.', prong: 'C', kind: 'refundableCreditOrBenefit' };
+    if (ctx.benefits.claimHouseholdBenefits === false) {
+      return { applied: false, amount: 0, reason: 'Household benefits claimed on the spouse return.', prong: 'C', kind: 'refundableCreditOrBenefit' };
     }
 
-    const cfg = taxConfig.benefits.gstHst;
+    const cfg = ctx.config.benefits.gstHst;
     const isFamily = ctx.maritalStatus !== 'single';
     const children = estimateChildrenCount(ctx);
     const ani = estimateAdjustedFamilyNetIncome(ctx);
@@ -279,33 +226,35 @@ export const IMPLEMENTED_RULES: Record<string, MappingFn> = {
     );
   },
   'gst/hst credit': (ctx) => IMPLEMENTED_RULES['gst hst credit'](ctx),
-  'ontario sales tax credit': (ctx) => {
+  'canada groceries and essentials benefit': (ctx) => IMPLEMENTED_RULES['gst hst credit'](ctx),
+  'canada child benefit': (ctx) => {
     if (!ctx.benefits.includeBenefitsEstimates) {
       return { applied: false, amount: 0, reason: 'Benefit estimates disabled.', prong: 'C', kind: 'refundableCreditOrBenefit' };
     }
-    if (ctx.benefits.claimOstc === false) {
-      return { applied: false, amount: 0, reason: 'OSTC claimed by spouse.', prong: 'C', kind: 'refundableCreditOrBenefit' };
+    if (ctx.benefits.claimHouseholdBenefits === false) {
+      return { applied: false, amount: 0, reason: 'Household benefits claimed on the spouse return.', prong: 'C', kind: 'refundableCreditOrBenefit' };
     }
-
-    const cfg = taxConfig.benefits.ostc;
-    const isFamily = ctx.maritalStatus !== 'single';
-    const children = estimateChildrenCount(ctx);
-    const adults = isFamily ? 2 : 1;
-    const max = cfg.maxPerAdultOrChild * (adults + children);
-
-    const ani = estimateAdjustedFamilyNetIncome(ctx);
-    const threshold = !isFamily && children === 0 ? cfg.singleNoChildrenThreshold : cfg.familyThreshold;
-    const reduction = Math.max(0, (ani - threshold) * cfg.reductionRate);
-    const annual = Math.max(0, max - reduction);
-
+    const cfg = ctx.config.benefits.ccb;
+    const under6 = Math.max(0, ctx.deductions.numChildrenUnder7);
+    const older = Math.max(0, ctx.deductions.numChildren7to16 + ctx.deductions.numChildrenDTCEligible);
+    const kids = under6 + older;
+    if (kids <= 0) {
+      return { applied: false, amount: 0, reason: 'No children entered.', prong: 'C', kind: 'refundableCreditOrBenefit' };
+    }
+    const max = under6 * cfg.under6 + older * cfg.age6to17;
+    const afni = estimateAdjustedFamilyNetIncome(ctx);
+    const idx = Math.min(kids, 4) - 1;
+    const tier1 = Math.max(0, Math.min(afni, cfg.threshold2) - cfg.threshold1) * cfg.rates1[idx];
+    const tier2 = Math.max(0, afni - cfg.threshold2) * cfg.rates2[idx];
+    const annual = Math.max(0, max - tier1 - tier2);
     return applied(
       round2(annual),
-      `OSTC estimate (annual) using max per person and 4% reduction over threshold.`,
-      'OSTC not payable at this income / inputs.',
+      `CCB estimate: max $${round2(max)} for ${kids} child(ren) less reduction on AFNI $${round2(afni)} (children under 7 are treated as under 6).`,
+      'CCB fully reduced at this income.',
       'C',
       'refundableCreditOrBenefit'
     );
-  }
+  },
 };
 
 export function normalizeKey(name: string): string {
@@ -320,7 +269,7 @@ export function normalizeKey(name: string): string {
 export function estimateNetIncome(ctx: UserContext): number {
   // Total income (eligible dividends grossed up) less the deductions we model, including the
   // enhanced CPP deduction (line 22215) computed from employment income.
-  const income = totalIncome(ctx.income) - computePayroll(ctx.income.employment).cppEnhanced;
+  const income = totalIncome(ctx.config, ctx.income) - computePayroll(ctx.config, ctx.income.employment, ctx.province).cppEnhanced;
   // Deductions: only those we model in engine A
   const rrsp = IMPLEMENTED_RULES['rrsp deduction'](ctx).amount;
   const fhsa = IMPLEMENTED_RULES['fhsa deduction'](ctx).amount;
@@ -335,23 +284,18 @@ export function estimateTaxableIncome(ctx: UserContext): number {
   return estimateNetIncome(ctx);
 }
 
-export function computeDonationCredits(ctx: UserContext): { federal: number; ontario: number } {
+/** Federal donation credit. The provincial part is computed in lib/tax/provincial.ts. */
+export function computeFederalDonationCredit(ctx: UserContext): number {
   const donations = Math.max(0, ctx.credits.donations);
   const first = Math.min(200, donations);
   const rest = Math.max(0, donations - 200);
 
-  // Federal: 29% above $200, but 33% on the part of the donations that comes out of income taxed
-  // at the top rate (i.e. the lesser of the excess donations and taxable income over the threshold).
+  // 29% above $200, but 33% on the part of the donations that comes out of income taxed at the
+  // top rate (the lesser of the excess donations and taxable income over the threshold).
   const taxableIncome = estimateTaxableIncome(ctx);
-  const fedCfg = taxConfig.federal.donationCredit;
+  const fedCfg = ctx.config.federal.donationCredit;
   const atTopRate = Math.min(rest, Math.max(0, taxableIncome - fedCfg.topRateIncomeThreshold));
-  const federal = round2(
-    first * fedCfg.first200Rate + atTopRate * fedCfg.over200TopRate + (rest - atTopRate) * fedCfg.over200Rate
-  );
-
-  const onCfg = taxConfig.ontario.donationCredit;
-  const ontario = round2(first * onCfg.first200Rate + rest * onCfg.over200Rate);
-  return { federal, ontario };
+  return round2(first * fedCfg.first200Rate + atTopRate * fedCfg.over200TopRate + (rest - atTopRate) * fedCfg.over200Rate);
 }
 
 export function estimateAdjustedFamilyNetIncome(ctx: UserContext): number {
@@ -370,14 +314,6 @@ function phaseout(max: number, income: number, start: number, end: number): numb
   if (income >= end) return 0;
   const frac = (income - start) / (end - start);
   return max * (1 - frac);
-}
-
-function lookupCareRate(familyAdjustedIncome: number): number {
-  for (const row of taxConfig.ontario.careChildcareTaxCredit.table) {
-    if (row.max === null) return row.rate;
-    if (familyAdjustedIncome <= row.max) return row.rate;
-  }
-  return 0;
 }
 
 function round2(n: number): number {

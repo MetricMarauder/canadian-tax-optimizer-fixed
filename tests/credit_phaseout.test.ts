@@ -1,10 +1,14 @@
+import { getConfig } from '@/lib/tax/config';
 import { describe, it, expect } from 'vitest';
 import { IMPLEMENTED_RULES, estimateNetIncome } from '@/lib/rules/implemented';
-import taxConfig from '@/lib/tax/config/2025.json';
+import { getConfig as _gc } from '@/lib/tax/config';
+const taxConfig = _gc(2025);
 import type { UserContext } from '@/lib/rules/types';
 
 function ctxWithIncome(income: number): UserContext {
   return {
+    config: getConfig(2025),
+    province: 'ON',
     age: 40,
     maritalStatus: 'single',
     spouseNetIncome: 0,

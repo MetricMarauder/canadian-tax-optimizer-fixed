@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { CalculateRequest, CalculateResponse, MaritalStatus } from '@/lib/api/types';
+import { DEFAULT_YEAR, PROVINCES, SUPPORTED_YEARS, type ProvinceCode } from '@/lib/tax/config';
 
 function toNumber(v: string): number {
   if (v.trim() === '') return 0;
@@ -55,7 +56,8 @@ type PersonForm = {
 };
 
 type HouseholdForm = {
-  province: 'Ontario';
+  province: ProvinceCode;
+  year: number;
   maritalStatus: MaritalStatus;
   hasSpouse: boolean;
   claimant: 'taxpayer' | 'spouse';
@@ -113,10 +115,10 @@ const defaultSpouse = (): PersonForm => {
   return s;
 };
 
-function personToInput(p: PersonForm) {
+function personToInput(p: PersonForm, province: ProvinceCode) {
   return {
     age: toNumber(p.age),
-    province: 'Ontario' as const,
+    province,
     income: {
       employment: toNumber(p.employmentIncome),
       other: toNumber(p.otherIncome),
@@ -260,7 +262,7 @@ function PersonSection({
           <input type="checkbox" className="h-5 w-5" checked={person.cwbDisabilityEligible} onChange={setBool('cwbDisabilityEligible')} />
         </Field>
 
-        <Field label="Estimate GST/HST + Ontario sales tax credit?">
+        <Field label="Estimate benefits (CGEB/GST credit, CCB, provincial benefits)?">
           <input type="checkbox" className="h-5 w-5" checked={person.includeBenefitsEstimates} onChange={setBool('includeBenefitsEstimates')} />
         </Field>
 
@@ -284,8 +286,10 @@ function Breakdown({
     creditsApplied: { name: string; amount: number; lineForm?: string; jurisdiction: string }[];
     taxAfterCredits: number;
     surtax?: number;
-    ontarioTaxReduction?: number;
+    taxReduction?: number;
     healthPremium?: number;
+    quebecAbatement?: number;
+    notes?: string[];
   };
 }) {
   return (
@@ -295,14 +299,17 @@ function Breakdown({
         <div>Taxable income: <span className="font-medium">${data.taxableIncome.toFixed(2)}</span></div>
         <div>Tax before credits: <span className="font-medium">${data.taxBeforeCredits.toFixed(2)}</span></div>
         <div>Non-refundable credits applied: <span className="font-medium">${data.nonRefundableCreditsTotal.toFixed(2)}</span></div>
-        {data.surtax !== undefined && (
-          <div>Ontario surtax: <span className="font-medium">${data.surtax.toFixed(2)}</span></div>
+        {!!data.quebecAbatement && (
+          <div>Quebec abatement (16.5%): <span className="font-medium">−${data.quebecAbatement.toFixed(2)}</span></div>
         )}
-        {data.ontarioTaxReduction !== undefined && (
-          <div>Ontario tax reduction: <span className="font-medium">−${data.ontarioTaxReduction.toFixed(2)}</span></div>
+        {!!data.surtax && (
+          <div>Surtax: <span className="font-medium">${data.surtax.toFixed(2)}</span></div>
         )}
-        {data.healthPremium !== undefined && (
-          <div>Ontario Health Premium: <span className="font-medium">${data.healthPremium.toFixed(2)}</span></div>
+        {!!data.taxReduction && (
+          <div>Low-income tax reduction: <span className="font-medium">−${data.taxReduction.toFixed(2)}</span></div>
+        )}
+        {!!data.healthPremium && (
+          <div>Health premium: <span className="font-medium">${data.healthPremium.toFixed(2)}</span></div>
         )}
         <div>Tax payable: <span className="font-medium">${data.taxAfterCredits.toFixed(2)}</span></div>
       </div>
@@ -315,6 +322,16 @@ function Breakdown({
           {data.creditsApplied.length === 0 && <li className="list-none text-gray-600">(none)</li>}
         </ul>
       </div>
+      {data.notes && data.notes.length > 0 && (
+        <div className="mt-3 rounded-lg bg-amber-50 p-2 text-xs text-amber-900">
+          <div className="font-semibold">Limitations / estimates</div>
+          <ul className="list-disc pl-4">
+            {data.notes.map((n, i) => (
+              <li key={i}>{n}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
@@ -325,7 +342,8 @@ export default function HomePage() {
   const [result, setResult] = useState<CalculateResponse | null>(null);
 
   const [household, setHousehold] = useState<HouseholdForm>({
-    province: 'Ontario',
+    province: 'ON',
+    year: DEFAULT_YEAR,
     maritalStatus: 'married',
     hasSpouse: true,
     claimant: 'taxpayer',
@@ -337,17 +355,18 @@ export default function HomePage() {
 
   const request: CalculateRequest = useMemo(() => {
     const base: CalculateRequest = {
+      year: household.year,
       province: household.province,
       household: {
         maritalStatus: household.maritalStatus,
         claimant: household.claimant,
         tuitionTransferAmount: toNumber(household.tuitionTransferAmount),
       },
-      taxpayer: personToInput(taxpayer),
+      taxpayer: personToInput(taxpayer, household.province),
     };
 
     if (household.hasSpouse && household.maritalStatus !== 'single') {
-      base.spouse = personToInput(spouse);
+      base.spouse = personToInput(spouse, household.province);
     }
 
     return base;
@@ -377,13 +396,32 @@ export default function HomePage() {
       <section className="rounded-2xl bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold">Household</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Province">
+          <Field label="Province or territory (residence on December 31)">
             <select
               className="w-full rounded-lg border p-2"
               value={household.province}
-              onChange={(e) => setHousehold((s) => ({ ...s, province: e.target.value as 'Ontario' }))}
+              onChange={(e) => setHousehold((s) => ({ ...s, province: e.target.value as ProvinceCode }))}
             >
-              <option value="Ontario">Ontario</option>
+              {PROVINCES.map((p) => (
+                <option key={p.code} value={p.code}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Tax year">
+            <select
+              className="w-full rounded-lg border p-2"
+              value={household.year}
+              onChange={(e) => setHousehold((s) => ({ ...s, year: Number(e.target.value) }))}
+            >
+              {SUPPORTED_YEARS.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                  {y === 2026 ? ' (preliminary — file in 2027)' : ''}
+                </option>
+              ))}
             </select>
           </Field>
 
@@ -467,11 +505,11 @@ export default function HomePage() {
                 Tax payable total: <span className="font-semibold">${result.household.taxPayableTotal.toFixed(2)}</span>
               </div>
               <div className="mt-1 text-sm">
-                Refundable credits on return (CWB, CARE):{' '}
+                Refundable credits on return (CWB, CARE, QC work premium):{' '}
                 <span className="font-semibold">${result.household.refundableCreditsAndBenefitsTotal.toFixed(2)}</span>
               </div>
               <div className="mt-1 text-sm">
-                Benefits paid separately (GST/HST credit, OSTC):{' '}
+                Benefits paid separately (CGEB, CCB, provincial benefits):{' '}
                 <span className="font-semibold">${result.household.benefitsPaidSeparatelyTotal.toFixed(2)}</span>
               </div>
               <div className="mt-1 text-xs text-gray-600">
@@ -498,7 +536,7 @@ export default function HomePage() {
                   Tuition credit transferred:{' '}
                   <span className="font-semibold">
                     ${result.transferSummary.tuitionFederalCreditTransferred.toFixed(2)} federal, $
-                    {result.transferSummary.tuitionOntarioCreditTransferred.toFixed(2)} Ontario
+                    {result.transferSummary.tuitionProvincialCreditTransferred.toFixed(2)} provincial
                   </span>
                 </div>
                 <div className="mt-1 text-sm">
@@ -518,7 +556,7 @@ export default function HomePage() {
                   Personal amount credit transferred:{' '}
                   <span className="font-semibold">
                     ${result.transferSummary.personalAmountFederalCredit.toFixed(2)} federal, $
-                    {result.transferSummary.personalAmountOntarioCredit.toFixed(2)} Ontario
+                    {result.transferSummary.personalAmountProvincialCredit.toFixed(2)} provincial
                   </span>
                 </div>
                 <div className="mt-1 text-sm">
@@ -537,7 +575,7 @@ export default function HomePage() {
                   Disability transfer base:{' '}
                   <span className="font-semibold">
                     ${result.transferSummary.disabilityTransferFederalBase.toFixed(2)} federal, $
-                    {result.transferSummary.disabilityTransferOntarioBase.toFixed(2)} Ontario
+                    {result.transferSummary.disabilityTransferProvincialBase.toFixed(2)} provincial
                   </span>
                   {result.transferSummary.disabilityTransferFrom && (
                     <>
@@ -556,7 +594,7 @@ export default function HomePage() {
               <h3 className="text-md font-semibold">Taxpayer breakdown</h3>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <Breakdown title="Federal" data={result.taxpayer.federal} />
-                <Breakdown title="Ontario" data={result.taxpayer.ontario} />
+                <Breakdown title={result.taxpayer.provincial.name} data={result.taxpayer.provincial} />
               </div>
             </div>
 
@@ -565,7 +603,7 @@ export default function HomePage() {
                 <h3 className="text-md font-semibold">Spouse breakdown</h3>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <Breakdown title="Federal" data={result.spouse.federal} />
-                  <Breakdown title="Ontario" data={result.spouse.ontario} />
+                  <Breakdown title={result.spouse.provincial.name} data={result.spouse.provincial} />
                 </div>
               </div>
             )}

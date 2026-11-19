@@ -1,4 +1,20 @@
 import { z } from 'zod';
+import { PROVINCE_CODES, PROVINCES, SUPPORTED_YEARS } from '@/lib/tax/config';
+
+/** Accepts a two-letter code ('ON') or a full name ('Ontario'), case-insensitive. */
+const ProvinceSchema = z.preprocess((v) => {
+  if (typeof v !== 'string') return v;
+  const t = v.trim();
+  const byName = PROVINCES.find((p) => p.name.toLowerCase() === t.toLowerCase());
+  return byName ? byName.code : t.toUpperCase();
+}, z.enum(PROVINCE_CODES));
+
+const YearSchema = z.coerce
+  .number()
+  .int()
+  .refine((y) => (SUPPORTED_YEARS as readonly number[]).includes(y), {
+    message: `Supported tax years: ${SUPPORTED_YEARS.join(', ')}`,
+  });
 
 const PersonIncomeSchema = z.object({
   employment: z.number().min(0).default(0),
@@ -33,7 +49,7 @@ const PersonBenefitsSchema = z.object({
 
 const PersonInputSchema = z.object({
   age: z.number().int().min(0).max(120),
-  province: z.literal('Ontario').default('Ontario'),
+  province: ProvinceSchema.optional(),
   income: PersonIncomeSchema,
   deductions: PersonDeductionsSchema,
   credits: PersonCreditsSchema,
@@ -48,7 +64,8 @@ const HouseholdSettingsSchema = z.object({
 });
 
 export const CalculateRequestSchema = z.object({
-  province: z.literal('Ontario'),
+  year: YearSchema.default(2025),
+  province: ProvinceSchema,
   household: HouseholdSettingsSchema,
   taxpayer: PersonInputSchema,
   spouse: PersonInputSchema.optional(),

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { taxFromBrackets } from '@/lib/tax/brackets';
-import taxConfig from '@/lib/tax/config/2025.json';
+import { getConfig as _gc } from '@/lib/tax/config';
+const taxConfig = _gc(2025);
 
 describe('bracket calculation', () => {
   it('computes federal tax for income spanning multiple brackets', () => {
@@ -18,7 +19,7 @@ describe('bracket calculation', () => {
 
   it('computes ontario tax for income in first bracket', () => {
     const income = 40000;
-    const tax = taxFromBrackets(income, taxConfig.ontario.brackets);
-    expect(tax).toBeCloseTo(income * taxConfig.ontario.brackets[0].rate, 2);
+    const tax = taxFromBrackets(income, taxConfig.provinces.ON.brackets);
+    expect(tax).toBeCloseTo(income * taxConfig.provinces.ON.brackets[0].rate, 2);
   });
 });

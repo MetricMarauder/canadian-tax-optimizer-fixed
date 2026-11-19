@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { CalculateRequest } from '@/lib/api/types';
 import type { RuleItem } from '@/lib/rules/types';
-import taxConfig from '@/lib/tax/config/2025.json';
+import { getConfig as _gc } from '@/lib/tax/config';
+const taxConfig = _gc(2025);
 import { calculateOptimizedHouseholdFromItems } from '@/lib/tax/household';
 
 function mk(id: string, name: string, jurisdiction: 'Federal' | 'Ontario', mechanism: string): RuleItem {
@@ -31,11 +32,11 @@ describe('household optimizer', () => {
     ];
 
     const req: CalculateRequest = {
-      province: 'Ontario',
+      province: 'ON',
       household: { maritalStatus: 'married', claimant: 'taxpayer' },
       taxpayer: {
         age: 40,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 95000, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -54,7 +55,7 @@ describe('household optimizer', () => {
       },
       spouse: {
         age: 38,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 0, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -82,11 +83,11 @@ describe('household optimizer', () => {
     const items: RuleItem[] = [mk('1', 'Canada workers benefit', 'Federal', 'Refundable credit')];
 
     const req: CalculateRequest = {
-      province: 'Ontario',
+      province: 'ON',
       household: { maritalStatus: 'married', claimant: 'taxpayer' },
       taxpayer: {
         age: 30,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 10000, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -105,7 +106,7 @@ describe('household optimizer', () => {
       },
       spouse: {
         age: 29,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 10000, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -141,11 +142,11 @@ describe('household optimizer', () => {
     ];
 
     const req: CalculateRequest = {
-      province: 'Ontario',
+      province: 'ON',
       household: { maritalStatus: 'married', claimant: 'taxpayer' },
       taxpayer: {
         age: 45,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 120000, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -164,7 +165,7 @@ describe('household optimizer', () => {
       },
       spouse: {
         age: 23,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 0, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -189,7 +190,7 @@ describe('household optimizer', () => {
       Math.round(5000 * taxConfig.federal.lowestRate * 100) / 100
     );
     // Ontario has no current-year tuition credit, so nothing transfers provincially.
-    expect(res.transferSummary?.tuitionOntarioCreditTransferred).toBe(0);
+    expect(res.transferSummary?.tuitionProvincialCreditTransferred).toBe(0);
   });
 
   it('limits tuition transfer to the donor’s unused credit amount', () => {
@@ -202,11 +203,11 @@ describe('household optimizer', () => {
     ];
 
     const req: CalculateRequest = {
-      province: 'Ontario',
+      province: 'ON',
       household: { maritalStatus: 'married', claimant: 'taxpayer' },
       taxpayer: {
         age: 45,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 120000, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -225,7 +226,7 @@ describe('household optimizer', () => {
       },
       spouse: {
         age: 23,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 20000, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -259,11 +260,11 @@ describe('household optimizer', () => {
     ];
 
     const req: CalculateRequest = {
-      province: 'Ontario',
+      province: 'ON',
       household: { maritalStatus: 'married', claimant: 'taxpayer' },
       taxpayer: {
         age: 45,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 120000, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -282,7 +283,7 @@ describe('household optimizer', () => {
       },
       spouse: {
         age: 42,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 22000, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -305,8 +306,8 @@ describe('household optimizer', () => {
     expect(res.transferSummary?.disabilityTransferFrom).toBe('spouse');
     expect(res.transferSummary?.disabilityTransferFederalBase).toBeGreaterThan(0);
     expect(res.transferSummary?.disabilityTransferFederalBase).toBeLessThan(taxConfig.federal.disabilityAmount);
-    expect(res.transferSummary?.disabilityTransferOntarioBase).toBeGreaterThan(0);
-    expect(res.transferSummary?.disabilityTransferOntarioBase).toBeLessThan(taxConfig.ontario.disabilityAmount);
+    expect(res.transferSummary?.disabilityTransferProvincialBase).toBeGreaterThan(0);
+    expect(res.transferSummary?.disabilityTransferProvincialBase).toBeLessThan(taxConfig.provinces.ON.disabilityAmount);
   });
 
   it('claims unused spousal personal amount on the better-earning spouse return', () => {
@@ -316,11 +317,11 @@ describe('household optimizer', () => {
     ];
 
     const req: CalculateRequest = {
-      province: 'Ontario',
+      province: 'ON',
       household: { maritalStatus: 'married', claimant: 'taxpayer' },
       taxpayer: {
         age: 44,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 90000, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -339,7 +340,7 @@ describe('household optimizer', () => {
       },
       spouse: {
         age: 41,
-        province: 'Ontario',
+        province: 'ON',
         income: { employment: 0, other: 0, capitalGains: 0, eligibleDividends: 0 },
         deductions: {
           rrspContributions: 0,
@@ -361,12 +362,12 @@ describe('household optimizer', () => {
     const res = calculateOptimizedHouseholdFromItems(req, items);
     expect(res.transferSummary?.personalAmountClaimant).toBe('taxpayer');
     expect(res.transferSummary?.personalAmountFederalCredit).toBeGreaterThan(0);
-    expect(res.transferSummary?.personalAmountOntarioCredit).toBeGreaterThan(0);
+    expect(res.transferSummary?.personalAmountProvincialCredit).toBeGreaterThan(0);
     expect(
       res.taxpayer.federal.creditsApplied.some((c) => c.name.includes('Spouse or common-law partner amount'))
     ).toBe(true);
     expect(
-      res.taxpayer.ontario.creditsApplied.some((c) => c.name.includes('Ontario spouse or common-law partner amount'))
+      res.taxpayer.provincial.creditsApplied.some((c) => c.name.includes('Spouse or common-law partner amount (Ontario'))
     ).toBe(true);
   });
 });

@@ -1,9 +1,12 @@
+import { getConfig } from '@/lib/tax/config';
 import { describe, it, expect } from 'vitest';
 import { IMPLEMENTED_RULES } from '@/lib/rules/implemented';
 import type { UserContext } from '@/lib/rules/types';
 
 function baseCtx(): UserContext {
   return {
+    config: getConfig(2025),
+    province: 'ON',
     age: 30,
     maritalStatus: 'single',
     spouseNetIncome: 0,
