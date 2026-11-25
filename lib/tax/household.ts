@@ -10,8 +10,8 @@ import type {
 import type { CalculationOverrides } from '@/lib/tax/calculate';
 import type { UserContext } from '@/lib/rules/types';
 import type { RuleItem } from '@/lib/rules/types';
-import { loadRuleItems } from '@/lib/excel/loadCredits';
-import { EXCEL_PATH, buildContext, calculateTax, calculateTaxFromItems } from '@/lib/tax/calculate';
+import { RULE_ITEMS } from '@/lib/rules/catalog';
+import { buildContext, calculateTax, calculateTaxFromItems } from '@/lib/tax/calculate';
 import { estimateNetIncome, normalizeKey } from '@/lib/rules/implemented';
 
 /**
@@ -111,7 +111,7 @@ export function combineHousehold(taxpayer: ReturnResult, spouse?: ReturnResult) 
 }
 
 export function calculateOptimizedHousehold(req: CalculateRequest): CalculateResponse {
-  const { items } = loadRuleItems(EXCEL_PATH);
+  const items = RULE_ITEMS;
   return calculateOptimizedHouseholdFromItems(req, items);
 }
 

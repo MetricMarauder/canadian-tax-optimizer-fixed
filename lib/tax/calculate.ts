@@ -12,7 +12,7 @@ import type {
   TaxBreakdown,
 } from '@/lib/api/types';
 import type { RuleItem, UserContext } from '@/lib/rules/types';
-import { loadRuleItems } from '@/lib/excel/loadCredits';
+import { RULE_ITEMS } from '@/lib/rules/catalog';
 import { PROVINCIAL_PLACEHOLDER, runRules } from '@/lib/rules/engine';
 import { estimateChildrenCount, estimateNetIncome, normalizeKey } from '@/lib/rules/implemented';
 
@@ -49,7 +49,7 @@ export type CalculationOverrides = {
 };
 
 export function calculate(req: IndividualRequest): ReturnResult {
-  const { items } = loadRuleItems(EXCEL_PATH);
+  const items = RULE_ITEMS;
   return calculateFromItems(req, items);
 }
 
@@ -76,7 +76,7 @@ export function calculateTax(
   spouseNetIncome = 0,
   overrides?: CalculationOverrides
 ): ReturnResult {
-  const { items } = loadRuleItems(EXCEL_PATH);
+  const items = RULE_ITEMS;
   return calculateTaxFromItems(person, maritalStatus, spouseNetIncome, items, overrides);
 }
 
