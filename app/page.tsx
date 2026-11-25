@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { CalculateRequest, CalculateResponse, MaritalStatus } from '@/lib/api/types';
+import { calculate } from '@/lib/api/calculate';
 import { DEFAULT_YEAR, PROVINCES, SUPPORTED_YEARS, type ProvinceCode } from '@/lib/tax/config';
 
 function toNumber(v: string): number {
@@ -390,13 +391,7 @@ export default function HomePage() {
     setError(null);
     setResult(null);
     try {
-      const res = await fetch('/api/calculate', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(request),
-      });
-      if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
-      setResult((await res.json()) as CalculateResponse);
+      setResult(calculate(request));
     } catch (e: any) {
       setError(e?.message ?? 'Unknown error');
     } finally {

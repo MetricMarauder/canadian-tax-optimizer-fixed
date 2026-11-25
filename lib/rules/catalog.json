@@ -1,0 +1,1619 @@
+[
+  {
+    "id": "row_2",
+    "name": "Registered pension plan (RPP) deduction",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 20700",
+    "eligibilitySummary": "Employee contributions to a registered pension plan.",
+    "calcSummary": "Deduct eligible RPP contributions reported on slips.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Reduces net income.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_3",
+    "name": "RRSP deduction",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 20800",
+    "eligibilitySummary": "RRSP contributor with available contribution room.",
+    "calcSummary": "Deduct eligible RRSP contributions up to your RRSP deduction limit.",
+    "spousalTransfer": "No (spousal RRSP still deducted by contributor)",
+    "carryforward": "Yes (unused contribution room carries forward)",
+    "notes": "Room shown on Notice of Assessment.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_4",
+    "name": "First Home Savings Account (FHSA) deduction",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 20805",
+    "eligibilitySummary": "FHSA holder with eligible contributions and available participation room.",
+    "calcSummary": "Deduct eligible FHSA contributions (subject to FHSA limits).",
+    "spousalTransfer": "No",
+    "carryforward": "Yes (unused room carries forward)",
+    "notes": "FHSA deduction is separate from RRSP.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_5",
+    "name": "Deduction for elected split-pension amount",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 21000",
+    "eligibilitySummary": "Taxpayer who elected to split eligible pension income with a spouse/partner.",
+    "calcSummary": "Deduct the elected split-pension amount.",
+    "spousalTransfer": "N/A (part of pension splitting)",
+    "carryforward": "No",
+    "notes": "Requires a joint election in tax software or form.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_6",
+    "name": "Annual union, professional or like dues",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 21200",
+    "eligibilitySummary": "Union/professional dues required to keep employment/professional status.",
+    "calcSummary": "Deduct eligible dues paid.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Keep receipts/T4 details.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_7",
+    "name": "Child care expenses",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 21400",
+    "eligibilitySummary": "Eligible child care expenses incurred to enable work, business, education, or certain training.",
+    "calcSummary": "Deduct eligible expenses up to CRA limits; generally claimed by the lower-income spouse.",
+    "spousalTransfer": "Family-based (generally lower-income spouse must claim)",
+    "carryforward": "No",
+    "notes": "Exceptions apply for students/infirm spouse.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_8",
+    "name": "Disability supports deduction",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 21500",
+    "eligibilitySummary": "Disability supports to work, study, or do research.",
+    "calcSummary": "Deduct eligible disability supports expenses (separate from medical expense credit).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Same expense generally can't be claimed twice.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_9",
+    "name": "Moving expenses",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 21900",
+    "eligibilitySummary": "Move at least 40 km closer to a new work location or post-secondary education.",
+    "calcSummary": "Deduct eligible moving expenses up to net income earned at the new location.",
+    "spousalTransfer": "No",
+    "carryforward": "Yes (to next year if limited by income at new location)",
+    "notes": "Claim based on eligible expense categories.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_10",
+    "name": "Support payments made (spousal support)",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 22000",
+    "eligibilitySummary": "Spousal support paid under a court order or written agreement (rules vary).",
+    "calcSummary": "Deduct eligible support payments made in the year.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Highly dependent on agreement/order details.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_11",
+    "name": "Carrying charges, interest expenses and other expenses",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 22100",
+    "eligibilitySummary": "Eligible investment-related charges/interest incurred to earn taxable investment income.",
+    "calcSummary": "Deduct eligible carrying charges and interest expenses.",
+    "spousalTransfer": "No",
+    "carryforward": "Often yes (investment interest may carry forward depending on circumstances)",
+    "notes": "Interest deductibility depends on use of borrowed funds.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_12",
+    "name": "Deduction for CPP/QPP contributions on self-employment income (employer portion)",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 22200",
+    "eligibilitySummary": "Self-employed taxpayers paying CPP/QPP.",
+    "calcSummary": "Deduct eligible portion of CPP/QPP contributions on self-employment income.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Employee portion is claimed as a credit on line 31000.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_13",
+    "name": "Deduction for CPP/QPP enhanced contributions on employment income",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 22215",
+    "eligibilitySummary": "Employees with enhanced CPP/QPP contributions.",
+    "calcSummary": "Deduct eligible enhanced contributions amount.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Separate from base CPP credit.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_14",
+    "name": "Other employment expenses",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 22900",
+    "eligibilitySummary": "Employees required by employer to incur expenses to earn employment income (conditions apply).",
+    "calcSummary": "Deduct eligible employment expenses (varies).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "See CRA guide T4044.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/publications/t4044/employment-expenses.html"
+    ]
+  },
+  {
+    "id": "row_15",
+    "name": "Canadian Armed Forces personnel and police deduction",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 24400",
+    "eligibilitySummary": "Eligible CAF members and police officers with qualifying service.",
+    "calcSummary": "Deduct eligible amount per CRA rules and certification.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Specialized eligibility.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_16",
+    "name": "Security options deduction",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 24900",
+    "eligibilitySummary": "Employees with qualifying employee stock option benefits.",
+    "calcSummary": "Deduct eligible stock option deduction when conditions met.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Complex; depends on grant/exercise details.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_17",
+    "name": "Other payments deduction (workers' compensation, social assistance, etc.)",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 25000",
+    "eligibilitySummary": "Certain social benefits included in income but deductible for taxable income calculation.",
+    "calcSummary": "Deduct eligible amounts as per slips.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Often not a choice; based on slip amounts.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_18",
+    "name": "Capital gains deduction (lifetime capital gains exemption)",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 25400",
+    "eligibilitySummary": "Disposition of qualified small business shares and/or qualified farm/fishing property (conditions apply).",
+    "calcSummary": "Deduct eligible portion of taxable capital gains up to available LCGE limit.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Very complex; requires detailed eligibility analysis.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_19",
+    "name": "Northern residents deductions",
+    "jurisdiction": "Federal",
+    "mechanism": "Deduction",
+    "impact": "Reduces taxable income",
+    "refundableFlag": false,
+    "lineForm": "Line 25500",
+    "eligibilitySummary": "Residents of prescribed northern/intermediate zones for eligible period.",
+    "calcSummary": "Deduct residency and/or travel amounts per CRA rules.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Requires zone and residency qualifications.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_20",
+    "name": "Basic personal amount",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 30000",
+    "eligibilitySummary": "All taxpayers; claim depends on net income.",
+    "calcSummary": "If net income ≤ $177,882: claim $16,129. If ≥ $253,414: claim $14,538. Otherwise use Federal Worksheet.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Amounts are for 2025 tax year.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/line-30000-basic-personal-amount.html"
+    ]
+  },
+  {
+    "id": "row_21",
+    "name": "Age amount",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 30100",
+    "eligibilitySummary": "Age 65+ in the year; phased out with income.",
+    "calcSummary": "Claim age amount using Federal Worksheet; reduced as net income increases.",
+    "spousalTransfer": "Yes (unused portion can be transferred to spouse via amounts transferred)",
+    "carryforward": "No",
+    "notes": "Transfer is typically via line 32600/amounts transferred.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_22",
+    "name": "Spouse or common-law partner amount",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 30300",
+    "eligibilitySummary": "Supporting a spouse/partner with low net income.",
+    "calcSummary": "Base amount reduced by spouse’s net income (worksheet calculation).",
+    "spousalTransfer": "N/A",
+    "carryforward": "No",
+    "notes": "Claim depends on spouse’s net income.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_23",
+    "name": "Amount for an eligible dependant (equivalent-to-spouse)",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 30400",
+    "eligibilitySummary": "No spouse/partner and you support an eligible dependant.",
+    "calcSummary": "Base amount reduced by dependant’s net income (worksheet).",
+    "spousalTransfer": "N/A",
+    "carryforward": "No",
+    "notes": "Cannot also claim spouse amount.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_24",
+    "name": "Canada caregiver amount (spouse/partner or eligible dependant 18+)",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 30425",
+    "eligibilitySummary": "Supporting an infirm spouse/partner or eligible dependant age 18+.",
+    "calcSummary": "Claim per CRA rules; reduced by dependant’s net income.",
+    "spousalTransfer": "Sometimes (depends on family/claim structure)",
+    "carryforward": "No",
+    "notes": "Part of Canada caregiver credit group.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_25",
+    "name": "Canada caregiver amount (other infirm dependants 18+)",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 30450",
+    "eligibilitySummary": "Supporting other infirm dependants age 18+.",
+    "calcSummary": "Claim per CRA rules; reduced by dependant’s net income.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "May require supporting documentation/attestation.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_26",
+    "name": "Canada caregiver amount (infirm children under 18)",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 30500",
+    "eligibilitySummary": "Supporting an infirm child under 18.",
+    "calcSummary": "Claim per CRA rules; may interact with other child-related claims.",
+    "spousalTransfer": "Yes (listed as transferable under amounts transferred)",
+    "carryforward": "No",
+    "notes": "Transfer via amounts transferred from spouse/partner in some cases.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_27",
+    "name": "CPP/QPP contributions through employment",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 30800",
+    "eligibilitySummary": "Paid CPP/QPP contributions as an employee.",
+    "calcSummary": "Claim the CPP/QPP amount from slips.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Part of federal non-refundable credits.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_28",
+    "name": "CPP/QPP contributions on self-employment income and other earnings (credit portion)",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31000",
+    "eligibilitySummary": "Self-employed and others paying base CPP/QPP on self-employment/other eligible earnings.",
+    "calcSummary": "Claim the base CPP/QPP contributions credit (employee portion).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Employer portion is deductible (line 22200).",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_29",
+    "name": "Employment insurance premiums through employment",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31200",
+    "eligibilitySummary": "Paid EI premiums as an employee.",
+    "calcSummary": "Claim EI premiums from slips.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Part of federal non-refundable credits.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_30",
+    "name": "Employment insurance premiums on self-employment and other eligible earnings",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31217",
+    "eligibilitySummary": "Paid EI premiums on self-employment/other eligible earnings (special program).",
+    "calcSummary": "Claim EI premiums payable on self-employment and other eligible earnings.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Eligibility depends on EI special benefits participation.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_31",
+    "name": "Volunteer firefighters' amount",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31220",
+    "eligibilitySummary": "Volunteer firefighter with sufficient eligible volunteer hours (typically 200+).",
+    "calcSummary": "Claim fixed amount per CRA rules (as an amount subject to 15% credit).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Cannot claim if claiming Search & Rescue volunteers amount instead.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_32",
+    "name": "Search and rescue volunteers' amount",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31240",
+    "eligibilitySummary": "Volunteer search-and-rescue with sufficient eligible hours (typically 200+).",
+    "calcSummary": "Claim fixed amount per CRA rules (as an amount subject to 15% credit).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Cannot also claim Volunteer firefighters amount for same year.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_33",
+    "name": "Canada employment amount",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31260",
+    "eligibilitySummary": "Employment income earned in the year.",
+    "calcSummary": "Claim the lesser of employment income and $1,471 (maximum for 2025).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Maximum amount is indexed.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/line-31260-canada-employment-amount.html"
+    ]
+  },
+  {
+    "id": "row_34",
+    "name": "Home buyers' amount",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31270",
+    "eligibilitySummary": "First-time home buyer (or eligible persons with disability buying a qualifying home).",
+    "calcSummary": "Claim qualifying amount per CRA rules (credit based on fixed base amount).",
+    "spousalTransfer": "Yes (can be shared between eligible co-buyers; max combined)",
+    "carryforward": "No",
+    "notes": "Eligibility depends on first-time buyer definition and qualifying home purchase.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_35",
+    "name": "Home accessibility expenses",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31285",
+    "eligibilitySummary": "Seniors (65+) or eligible persons with disability (or supporting family) for qualifying accessibility renovations.",
+    "calcSummary": "Claim 15% of eligible expenses up to program limit (per CRA rules).",
+    "spousalTransfer": "Yes (expenses can be claimed by eligible individual or supporting relative)",
+    "carryforward": "No",
+    "notes": "Renovations must improve accessibility/safety.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_36",
+    "name": "Adoption expenses",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31300",
+    "eligibilitySummary": "Adoptive parents with eligible adoption expenses during the adoption period.",
+    "calcSummary": "Claim eligible adoption expenses up to annual maximum (per CRA rules).",
+    "spousalTransfer": "Yes (adoptive parents can share up to the max)",
+    "carryforward": "No",
+    "notes": "Claimed in the year the adoption period ends.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_37",
+    "name": "Pension income amount",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31400",
+    "eligibilitySummary": "Taxpayer with eligible pension/annuity income.",
+    "calcSummary": "Claim the lesser of eligible pension income and the annual maximum (typically $2,000).",
+    "spousalTransfer": "Yes (unused portion can be transferred to spouse via amounts transferred)",
+    "carryforward": "No",
+    "notes": "Distinct from pension splitting.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_38",
+    "name": "Disability amount for self (DTC)",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31600",
+    "eligibilitySummary": "Approved Disability Tax Credit (severe and prolonged impairment; Form T2201).",
+    "calcSummary": "Claim disability amount (credit at 15% of disability base amount).",
+    "spousalTransfer": "Yes (unused portion may be transferred to supporting spouse/relative)",
+    "carryforward": "No",
+    "notes": "Approval required via CRA DTC process.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_39",
+    "name": "Disability amount transferred from a dependant",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31800",
+    "eligibilitySummary": "Supporting a dependant with an approved DTC who cannot use all of it.",
+    "calcSummary": "Claim transferable portion of dependant’s disability amount.",
+    "spousalTransfer": "N/A",
+    "carryforward": "No",
+    "notes": "Requires supporting relationship and conditions met.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_40",
+    "name": "Interest paid on your student loans",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 31900",
+    "eligibilitySummary": "Interest paid on qualifying government student loans.",
+    "calcSummary": "Claim eligible interest paid.",
+    "spousalTransfer": "No",
+    "carryforward": "Yes (unused amounts can generally be claimed in one of the next 5 years)",
+    "notes": "Carryforward window is typically 5 years.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_41",
+    "name": "Tuition amounts",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 32300",
+    "eligibilitySummary": "Student with eligible tuition fees (T2202).",
+    "calcSummary": "Claim eligible tuition; unused can be carried forward indefinitely; can transfer a limited amount to spouse/parent/grandparent.",
+    "spousalTransfer": "Yes (limited transfer; plus spousal transfer rules for unused amounts in year)",
+    "carryforward": "Yes (unused carried forward indefinitely)",
+    "notes": "Federal education/textbook amounts were eliminated previously; tuition remains.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_42",
+    "name": "Tuition amount transferred from a child or grandchild",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 32400",
+    "eligibilitySummary": "Supporting parent/grandparent (or spouse) receiving a transfer from student.",
+    "calcSummary": "Claim the transferred portion (subject to transfer limits).",
+    "spousalTransfer": "N/A",
+    "carryforward": "No",
+    "notes": "Transfer must be designated by the student on forms.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_43",
+    "name": "Amounts transferred from your spouse or common-law partner",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 32600",
+    "eligibilitySummary": "Spouse/partner has unused eligible credits (e.g., age, pension, disability, tuition).",
+    "calcSummary": "Claim eligible transferable amounts from spouse/partner (per CRA rules).",
+    "spousalTransfer": "Yes (this is the transfer line)",
+    "carryforward": "No",
+    "notes": "Supports spousal transfer logic for certain credits.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_44",
+    "name": "Eligible medical expenses",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Lines 33099 / 33199",
+    "eligibilitySummary": "Eligible medical expenses for self/spouse/dependants.",
+    "calcSummary": "Claim 15% of eligible expenses above threshold (lesser of 3% of net income or a fixed amount).",
+    "spousalTransfer": "Family can pool expenses; one spouse typically claims",
+    "carryforward": "No",
+    "notes": "Expenses must fall within a 12‑month period ending in the year.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_45",
+    "name": "Donations and gifts",
+    "jurisdiction": "Federal",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 34900",
+    "eligibilitySummary": "Donations to eligible registered charities/qualified donees.",
+    "calcSummary": "Credit rate depends on donation amount (higher rate above first $200).",
+    "spousalTransfer": "Yes (spouses can pool and one can claim)",
+    "carryforward": "Yes (unused donations can be carried forward up to 5 years)",
+    "notes": "Carryforward applies for unused donations.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_46",
+    "name": "Federal dividend tax credit",
+    "jurisdiction": "Federal",
+    "mechanism": "Tax credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 40425",
+    "eligibilitySummary": "Individuals reporting eligible or other-than-eligible Canadian dividends.",
+    "calcSummary": "Dividend gross-up and dividend tax credit per CRA rules.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Depends on dividend type; credit reduces tax payable.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_47",
+    "name": "Federal foreign tax credit",
+    "jurisdiction": "Federal",
+    "mechanism": "Tax credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 40500",
+    "eligibilitySummary": "Foreign-source income with foreign tax paid (non-business).",
+    "calcSummary": "Credit for eligible foreign taxes paid, subject to limitation.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Requires documentation; limitations apply.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_48",
+    "name": "Federal political contribution tax credit",
+    "jurisdiction": "Federal",
+    "mechanism": "Tax credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 41000",
+    "eligibilitySummary": "Contributions to registered federal political parties/candidates/associations.",
+    "calcSummary": "Credit based on contribution tiers up to annual maximum.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Claim using official receipts.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_49",
+    "name": "Investment tax credit",
+    "jurisdiction": "Federal",
+    "mechanism": "Tax credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 41200",
+    "eligibilitySummary": "Various eligible investment tax credit programs (very specific).",
+    "calcSummary": "Calculated on relevant forms; may generate refundable portion in some cases.",
+    "spousalTransfer": "No",
+    "carryforward": "Carryforward may apply depending on program",
+    "notes": "Highly specialized (not common for most individuals).",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_50",
+    "name": "Labour-sponsored funds tax credit",
+    "jurisdiction": "Federal",
+    "mechanism": "Tax credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Line 41400",
+    "eligibilitySummary": "Purchase of approved labour-sponsored venture capital corporation shares.",
+    "calcSummary": "Credit based on eligible investment up to limit (per CRA rules).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Availability depends on fund eligibility.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_51",
+    "name": "Refundable medical expense supplement",
+    "jurisdiction": "Federal",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "Line 45200",
+    "eligibilitySummary": "Working individuals/families with low income and high medical expenses (conditions apply).",
+    "calcSummary": "Refundable amount based on working income and net income (per CRA rules).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Designed to help low-income earners with medical expenses.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_52",
+    "name": "Canada workers benefit (CWB)",
+    "jurisdiction": "Federal",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "Line 45300",
+    "eligibilitySummary": "Low-income workers with working income; subject to eligibility rules and phase-outs.",
+    "calcSummary": "2025 maximum basic amount: $1,633 (single) or $2,813 (family). Phased out above thresholds; see CRA for details.",
+    "spousalTransfer": "Family-based (couples calculated on family net income)",
+    "carryforward": "No",
+    "notes": "Can also receive advance payments (ACWB).",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/line-45300-canada-workers-benefit-cwb.html"
+    ]
+  },
+  {
+    "id": "row_53",
+    "name": "Canada training credit (CTC)",
+    "jurisdiction": "Federal",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "Line 45350",
+    "eligibilitySummary": "Residents aged 26–65 who meet eligibility and paid eligible tuition/fees in the year; must have CTC limit available.",
+    "calcSummary": "Refundable credit equal to 50% of eligible fees paid in 2025, up to your Canada training credit limit (CTCL).",
+    "spousalTransfer": "No",
+    "carryforward": "N/A (CTCL accumulates if unused)",
+    "notes": "Claim through Schedule 11 and line 45350.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/line-45350-canada-training-credit.html"
+    ]
+  },
+  {
+    "id": "row_54",
+    "name": "Multigenerational home renovation tax credit (MHRTC)",
+    "jurisdiction": "Federal",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "Line 45355",
+    "eligibilitySummary": "Eligible renovations to create a secondary unit for a senior (65+) or an adult with disability to live with a relative.",
+    "calcSummary": "Refundable credit (15% of eligible costs up to program limit) as per CRA rules.",
+    "spousalTransfer": "Family-based (one claim per qualifying renovation)",
+    "carryforward": "No",
+    "notes": "Requires qualifying renovation and eligible person.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_55",
+    "name": "Employee and partner GST/HST rebate",
+    "jurisdiction": "Federal",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "Line 45700",
+    "eligibilitySummary": "Employees or partners with eligible employment/business expenses that include GST/HST (conditions apply).",
+    "calcSummary": "Claim GST/HST rebate amount calculated on the relevant form.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Linked to employment expenses claims.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_56",
+    "name": "Eligible educator school supply tax credit",
+    "jurisdiction": "Federal",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "Line 46900",
+    "eligibilitySummary": "Eligible educators with out-of-pocket eligible school supply expenses.",
+    "calcSummary": "Refundable credit based on eligible expenses (per CRA rules).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Keep receipts and meet educator definition.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_57",
+    "name": "Return of fuel charge proceeds to farmers tax credit",
+    "jurisdiction": "Federal",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "Line 47556",
+    "eligibilitySummary": "Eligible farming business in provinces where federal fuel charge applied (eligibility depends on rules).",
+    "calcSummary": "Refundable credit calculated per CRA rules/program parameters.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Complex program; rules can change; verify for 2025 claims.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_58",
+    "name": "Basic personal amount",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58040",
+    "eligibilitySummary": "Ontario resident at Dec 31, 2025 (for Ontario tax).",
+    "calcSummary": "Claim $12,747 as base amount on ON428 (credit at 5.05%).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Base amount shown on Form ON428 for 2025.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_59",
+    "name": "Age amount",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58080",
+    "eligibilitySummary": "Born in 1960 or earlier (65+ in 2025); income-tested.",
+    "calcSummary": "Use Worksheet ON428; maximum base amount $6,223 (credit at 5.05%).",
+    "spousalTransfer": "No (Ontario uses separate transfer rules; spousal transfer is handled through ON(S2) for certain amounts)",
+    "carryforward": "No",
+    "notes": "Ontario age amount uses worksheet.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_60",
+    "name": "Spouse or common-law partner amount",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58120",
+    "eligibilitySummary": "Supporting a spouse/partner with low net income.",
+    "calcSummary": "Maximum base amount $10,823 reduced by spouse’s net income.",
+    "spousalTransfer": "N/A",
+    "carryforward": "No",
+    "notes": "Ontario amounts in ON428 for 2025.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_61",
+    "name": "Amount for an eligible dependant",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58160",
+    "eligibilitySummary": "No spouse/partner and you support an eligible dependant with low net income.",
+    "calcSummary": "Maximum base amount $10,823 reduced by dependant’s net income.",
+    "spousalTransfer": "N/A",
+    "carryforward": "No",
+    "notes": "Ontario amounts in ON428 for 2025.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_62",
+    "name": "Ontario caregiver amount",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58185",
+    "eligibilitySummary": "Supporting an eligible relative dependent on you because of mental/physical impairment (conditions apply).",
+    "calcSummary": "Calculated using Worksheet ON428.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Ontario tax info provides details and thresholds.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/tax-packages-years/general-income-tax-benefit-package/ontario/5006-pc.html"
+    ]
+  },
+  {
+    "id": "row_63",
+    "name": "CPP/QPP contributions (Ontario credit)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 lines 58240 & 58280",
+    "eligibilitySummary": "CPP/QPP contributions reported on federal return (lines 30800 and 31000).",
+    "calcSummary": "Claim amounts from federal lines 30800 and 31000 on ON428; credit at 5.05%.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Ontario uses federal contribution amounts.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_64",
+    "name": "Employment insurance premiums (Ontario credit)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 lines 58300 & 58305",
+    "eligibilitySummary": "EI premiums through employment and on self-employment (federal lines 31200 and 31217).",
+    "calcSummary": "Claim EI premium amounts on ON428; credit at 5.05%.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Ontario mirrors federal EI premium credit base.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_65",
+    "name": "Adoption expenses (Ontario amount)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58330",
+    "eligibilitySummary": "Ontario adoption expenses (eligible; Ontario-specific maximum for certain claims).",
+    "calcSummary": "Claim eligible adoption expenses amount on ON428 (adds to non-refundable credit base).",
+    "spousalTransfer": "Yes (two adoptive parents may split)",
+    "carryforward": "No",
+    "notes": "Ontario tax info notes max $15,551 per child in year finalized under Ontario rules.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/tax-packages-years/general-income-tax-benefit-package/ontario/5006-pc.html"
+    ]
+  },
+  {
+    "id": "row_66",
+    "name": "Pension income amount (Ontario)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58360",
+    "eligibilitySummary": "Eligible pension income (federal line 31400).",
+    "calcSummary": "Claim the lesser of federal line 31400 and $1,762.",
+    "spousalTransfer": "No (Ontario relies on pension splitting rather than transfer)",
+    "carryforward": "No",
+    "notes": "Max shown on ON428.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_67",
+    "name": "Disability amount for self (Ontario)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58440",
+    "eligibilitySummary": "Approved disability amount for self (federal eligibility).",
+    "calcSummary": "If 18+ at end of year: claim $10,298; if under 18 use Worksheet ON428.",
+    "spousalTransfer": "Yes (unused portion may transfer to spouse/parent under rules)",
+    "carryforward": "No",
+    "notes": "Base amount shown on ON428.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_68",
+    "name": "Disability amount transferred from a dependant (Ontario)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58480",
+    "eligibilitySummary": "Supporting a dependant with an approved disability amount who cannot use it fully.",
+    "calcSummary": "Claim transferable portion per Worksheet ON428 and CRA rules.",
+    "spousalTransfer": "N/A",
+    "carryforward": "No",
+    "notes": "Special rules if different province of residence.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/tax-packages-years/general-income-tax-benefit-package/ontario/5006-pc.html"
+    ]
+  },
+  {
+    "id": "row_69",
+    "name": "Interest paid on student loans (Ontario)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58520",
+    "eligibilitySummary": "Interest on eligible student loans (federal line 31900).",
+    "calcSummary": "Claim the amount from federal line 31900; credit at 5.05%.",
+    "spousalTransfer": "No",
+    "carryforward": "Yes (generally can be claimed within 5 years if unused federally)",
+    "notes": "Ontario mirrors federal student loan interest base.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_70",
+    "name": "Unused tuition and education amounts (Ontario)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58560",
+    "eligibilitySummary": "Student with unused Ontario tuition amounts (Schedule ON(S11)).",
+    "calcSummary": "Claim current-year and/or carryforward tuition amounts; calculated on Schedule ON(S11).",
+    "spousalTransfer": "Yes (student may transfer limited amount to spouse/parent; separate schedule)",
+    "carryforward": "Yes (unused can be carried forward)",
+    "notes": "Ontario tuition uses Schedule ON(S11).",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/tax-packages-years/general-income-tax-benefit-package/ontario/5006-pc.html"
+    ]
+  },
+  {
+    "id": "row_71",
+    "name": "Amounts transferred from spouse or common-law partner (Ontario)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58640",
+    "eligibilitySummary": "Spouse/partner has unused eligible provincial credits transferable to you.",
+    "calcSummary": "Claim transferable amounts using Schedule ON(S2).",
+    "spousalTransfer": "Yes",
+    "carryforward": "No",
+    "notes": "Spousal transfer logic for Ontario credits uses ON(S2).",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_72",
+    "name": "Medical expenses (Ontario)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 lines 58689 / 58729 / 58769",
+    "eligibilitySummary": "Eligible medical expenses for self/spouse/children and other dependants (Ontario variations apply).",
+    "calcSummary": "Claim eligible medical expenses; threshold is lesser of $2,885 or 3% of net income (as per ON428).",
+    "spousalTransfer": "Family can pool expenses; one spouse typically claims",
+    "carryforward": "No",
+    "notes": "Ontario has specific maximums for attendant care/adapted van/moving; see ON-tax-info.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_73",
+    "name": "Donations and gifts (Ontario)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Non-refundable credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 58969",
+    "eligibilitySummary": "Charitable donations claimed federally (Schedule 9).",
+    "calcSummary": "Ontario credit uses 5.05% on first tier and 11.16% on second tier (per ON428).",
+    "spousalTransfer": "Yes (spouses can pool and one can claim)",
+    "carryforward": "Yes (donations generally carry forward 5 years federally and provincially)",
+    "notes": "Ontario uses federal Schedule 9 amounts.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_74",
+    "name": "Ontario dividend tax credit",
+    "jurisdiction": "Ontario",
+    "mechanism": "Tax credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 61520",
+    "eligibilitySummary": "Ontario residents reporting taxable Canadian dividends.",
+    "calcSummary": "Calculated using Worksheet ON428; reduces Ontario tax otherwise payable.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Distinct from federal dividend tax credit.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_75",
+    "name": "Provincial foreign tax credit (Ontario)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Tax credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 82 / T2036",
+    "eligibilitySummary": "Foreign-source income with foreign tax paid exceeding federal foreign tax credit limit.",
+    "calcSummary": "Calculate using Form T2036.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Ontario tax info describes claiming process.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/tax-packages-years/general-income-tax-benefit-package/ontario/5006-pc.html"
+    ]
+  },
+  {
+    "id": "row_76",
+    "name": "Ontario tax reduction",
+    "jurisdiction": "Ontario",
+    "mechanism": "Tax reduction",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 80",
+    "eligibilitySummary": "Low-income Ontario residents meeting residency and other conditions; not available in some cases (e.g., bankruptcy, not Ontario resident Dec 31).",
+    "calcSummary": "Calculated in ON428 Part C; reduces Ontario tax otherwise payable.",
+    "spousalTransfer": "Family-based (only higher net-income spouse can claim certain dependants reductions)",
+    "carryforward": "No",
+    "notes": "Not a 'credit' but materially reduces Ontario tax payable.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-c/5006-c-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_77",
+    "name": "Low-income Individuals and Families Tax (LIFT) credit",
+    "jurisdiction": "Ontario",
+    "mechanism": "Tax credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 62140 / Schedule ON428-A",
+    "eligibilitySummary": "Ontario residents with employment income meeting eligibility conditions.",
+    "calcSummary": "Calculated on Schedule ON428-A and reduces Ontario tax payable.",
+    "spousalTransfer": "No (each spouse with employment income can claim their own)",
+    "carryforward": "No",
+    "notes": "Ontario tax information page outlines conditions.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/tax-packages-years/general-income-tax-benefit-package/ontario/5006-pc.html"
+    ]
+  },
+  {
+    "id": "row_78",
+    "name": "Community food program donation tax credit for farmers",
+    "jurisdiction": "Ontario",
+    "mechanism": "Tax credit",
+    "impact": "Reduces tax payable",
+    "refundableFlag": false,
+    "lineForm": "Form ON428 line 62150",
+    "eligibilitySummary": "Ontario resident who (or spouse) is a farmer and made qualifying donation of Ontario farm products to eligible community food program.",
+    "calcSummary": "Credit = 25% of qualifying donations amount that is also claimed as charitable donation.",
+    "spousalTransfer": "Yes (donations can be pooled; farmer definition applies)",
+    "carryforward": "No",
+    "notes": "Requires also claiming donation on federal Schedule 9 and ON428 donations line.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/forms-publications/tax-packages-years/general-income-tax-benefit-package/ontario/5006-pc.html"
+    ]
+  },
+  {
+    "id": "row_79",
+    "name": "Ontario fertility treatment tax credit",
+    "jurisdiction": "Ontario",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "Form ON479 line 61268",
+    "eligibilitySummary": "Ontario residents with eligible medical expenses for fertility treatment.",
+    "calcSummary": "Credit = 25% of eligible fertility treatment medical expenses (max $5,000 credit).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Refundable even if no tax payable.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tc/5006-tc-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_80",
+    "name": "Ontario childcare access and relief from expenses (CARE) tax credit",
+    "jurisdiction": "Ontario",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "ON479 line 63050 / Schedule ON479-A",
+    "eligibilitySummary": "Ontario families claiming federal child care expenses deduction and meeting CARE eligibility.",
+    "calcSummary": "Calculated on Schedule ON479-A; refundable (income-tested).",
+    "spousalTransfer": "Family-based (one claim per family)",
+    "carryforward": "No",
+    "notes": "Must complete ON479-A to calculate.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tc/5006-tc-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_81",
+    "name": "Ontario seniors care at home tax credit",
+    "jurisdiction": "Ontario",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "ON479 line 63095",
+    "eligibilitySummary": "Ontario residents age 70+ (or spouse 70+) with eligible medical expenses for senior care; income-tested.",
+    "calcSummary": "Calculated on ON479 using medical expenses from ON428 line 58769; max $1,500 credit and phased out by family net income.",
+    "spousalTransfer": "Family-based (one claim for both spouses in many cases)",
+    "carryforward": "No",
+    "notes": "Refundable even if no tax payable.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tc/5006-tc-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_82",
+    "name": "Ontario seniors' public transit tax credit",
+    "jurisdiction": "Ontario",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "ON479 line 63100",
+    "eligibilitySummary": "Ontario seniors (65+) with eligible public transit expenses.",
+    "calcSummary": "15% of eligible transit costs up to $3,000 (max $450).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Refundable.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tc/5006-tc-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_83",
+    "name": "Ontario political contribution tax credit",
+    "jurisdiction": "Ontario",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "ON479 line 63110",
+    "eligibilitySummary": "Contributions to Ontario registered political parties/candidates/associations.",
+    "calcSummary": "Use Worksheet ON479; max $1,666.82 credit (fully refundable).",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Refundable even if no tax payable.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tc/5006-tc-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_84",
+    "name": "Ontario focused flow-through share tax credit",
+    "jurisdiction": "Ontario",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "ON479 line 63220",
+    "eligibilitySummary": "Investments in eligible Ontario mining flow-through shares with renounced exploration expenses.",
+    "calcSummary": "Credit = 5% of total expenses from Form T1221.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Refundable.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tc/5006-tc-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_85",
+    "name": "Ontario co-operative education tax credit",
+    "jurisdiction": "Ontario",
+    "mechanism": "Refundable credit",
+    "impact": "Reduces tax payable (refundable)",
+    "refundableFlag": true,
+    "lineForm": "ON479 line 63300",
+    "eligibilitySummary": "Businesses/partnerships (including unincorporated) hiring eligible co-op students in Ontario.",
+    "calcSummary": "25% or 30% of eligible expenditures depending on prior-year wages; max $3,000 per student placement.",
+    "spousalTransfer": "No",
+    "carryforward": "No",
+    "notes": "Although business-focused, it can be claimed on personal return for unincorporated businesses.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tc/5006-tc-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_86",
+    "name": "Ontario Energy and Property Tax Credit (OEPTC)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Benefit (refundable credit paid separately)",
+    "impact": "Paid benefit / refundable credit",
+    "refundableFlag": true,
+    "lineForm": "Form ON-BEN (2026 entitlement based on 2025 return)",
+    "eligibilitySummary": "Ontario resident Dec 31, 2025 who paid eligible rent/property tax or certain other housing costs (see ON-BEN).",
+    "calcSummary": "Apply using ON-BEN; entitlement is paid separately from tax refund (income-tested).",
+    "spousalTransfer": "Spousal rule: only one spouse/partner can apply for both of you (with exceptions for involuntary separation).",
+    "carryforward": "No",
+    "notes": "OEPTC is a component of the Ontario Trillium Benefit (OTB).",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tg/5006-tg-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_87",
+    "name": "Northern Ontario Energy Credit (NOEC)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Benefit (refundable credit paid separately)",
+    "impact": "Paid benefit / refundable credit",
+    "refundableFlag": true,
+    "lineForm": "Form ON-BEN (2026 entitlement based on 2025 return)",
+    "eligibilitySummary": "Ontario resident in Northern Ontario Dec 31, 2025 with eligible housing/energy costs (see ON-BEN).",
+    "calcSummary": "Apply using ON-BEN; entitlement is paid separately (income-tested).",
+    "spousalTransfer": "Spousal rule: only one spouse/partner can apply for both (exceptions apply).",
+    "carryforward": "No",
+    "notes": "NOEC is a component of OTB.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tg/5006-tg-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_88",
+    "name": "Ontario Sales Tax Credit (OSTC)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Benefit (refundable credit)",
+    "impact": "Paid benefit / refundable credit",
+    "refundableFlag": true,
+    "lineForm": "OTB/OSTC (automatic based on return)",
+    "eligibilitySummary": "Low-to-moderate income Ontario residents; no separate application required.",
+    "calcSummary": "CRA determines entitlement automatically; paid separately (often monthly) as part of OTB.",
+    "spousalTransfer": "For families, paid to the person whose return is assessed first.",
+    "carryforward": "No",
+    "notes": "ON-BEN notes OSTC does not require application.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tg/5006-tg-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_89",
+    "name": "Ontario Senior Homeowners' Property Tax Grant (OSHPTG)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Benefit (grant)",
+    "impact": "Paid benefit / refundable credit",
+    "refundableFlag": true,
+    "lineForm": "Form ON-BEN (2026 OSHPTG based on 2025 return)",
+    "eligibilitySummary": "Age 64+ on Dec 31, 2025 and owned/occupied an Ontario principal residence with property tax paid for 2025 (see ON-BEN).",
+    "calcSummary": "Apply via ON-BEN; paid separately from tax refund; income-tested.",
+    "spousalTransfer": "Spousal rule: only one spouse/partner can apply for both in many cases.",
+    "carryforward": "No",
+    "notes": "CRA OSHPTG Q&A confirms application via ON-BEN for 2026 OSHPTG using 2025 return.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/child-family-benefits/provincial-territorial-programs/ontario-senior-homeowners-property-tax-grant-oshptg-questions-answers.html",
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tg/5006-tg-25e.pdf"
+    ]
+  },
+  {
+    "id": "row_90",
+    "name": "Ontario Child Benefit (OCB)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Benefit (tax-free payment)",
+    "impact": "Paid benefit (tax-free)",
+    "refundableFlag": true,
+    "lineForm": "CRA-administered provincial program (paid with CCB)",
+    "eligibilitySummary": "Low-to-moderate income families with children under 18; paid with Canada Child Benefit.",
+    "calcSummary": "For July 2025–June 2026: up to $143.91/month per child under 18; partial benefit above adjusted family net income $26,364.",
+    "spousalTransfer": "Family-based payment",
+    "carryforward": "No",
+    "notes": "Paid together with CCB as a single monthly payment.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/child-family-benefits/provincial-territorial-programs/province-ontario.html"
+    ]
+  },
+  {
+    "id": "row_91",
+    "name": "GST/HST credit",
+    "jurisdiction": "Federal",
+    "mechanism": "Benefit (tax-free payment)",
+    "impact": "Paid benefit (tax-free)",
+    "refundableFlag": true,
+    "lineForm": "Automatic (file return)",
+    "eligibilitySummary": "Canadian residents with low/modest income; generally 19+ (or under 19 with spouse/child).",
+    "calcSummary": "CRA automatically determines eligibility when you file; quarterly tax-free payments.",
+    "spousalTransfer": "Family-based payment",
+    "carryforward": "No",
+    "notes": "Not claimed as a line item; based on return assessment.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/child-family-benefits/gst-hst-credit.html",
+      "https://www.canada.ca/en/revenue-agency/services/child-family-benefits/gst-hst-credit/who-eligible.html"
+    ]
+  },
+  {
+    "id": "row_92",
+    "name": "Canada child benefit (CCB)",
+    "jurisdiction": "Federal",
+    "mechanism": "Benefit (tax-free payment)",
+    "impact": "Paid benefit (tax-free)",
+    "refundableFlag": true,
+    "lineForm": "Automatic (apply/maintain eligibility; file return)",
+    "eligibilitySummary": "Eligible families responsible for children under 18; must file returns; CRA administers.",
+    "calcSummary": "Tax-free monthly payment; amount depends on number/ages of children and adjusted family net income.",
+    "spousalTransfer": "Family-based payment",
+    "carryforward": "No",
+    "notes": "Provincial programs (like OCB) may be included with CCB payment.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/child-family-benefits/canada-child-benefit.html"
+    ]
+  },
+  {
+    "id": "row_93",
+    "name": "Child disability benefit (CDB)",
+    "jurisdiction": "Federal",
+    "mechanism": "Benefit (tax-free payment)",
+    "impact": "Paid benefit (tax-free)",
+    "refundableFlag": true,
+    "lineForm": "Added to CCB automatically",
+    "eligibilitySummary": "Child under 18 eligible for Disability Tax Credit; family eligible for CCB.",
+    "calcSummary": "For July 2025–June 2026: up to $3,411 per eligible child; reduced when adjusted family net income exceeds threshold.",
+    "spousalTransfer": "Family-based payment",
+    "carryforward": "No",
+    "notes": "Paid with CCB as an add-on.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/child-family-benefits/child-disability-benefit.html"
+    ]
+  },
+  {
+    "id": "row_94",
+    "name": "Canada Carbon Rebate (CCR) for individuals (stopped March 15, 2025)",
+    "jurisdiction": "Federal",
+    "mechanism": "Benefit (ended)",
+    "impact": "Paid benefit (tax-free)",
+    "refundableFlag": false,
+    "lineForm": "No longer payable after April 2025",
+    "eligibilitySummary": "Program ended: federal fuel charge and CCR for individuals stopped March 15, 2025.",
+    "calcSummary": "No further quarterly CCR payments after April 2025 payment.",
+    "spousalTransfer": "N/A",
+    "carryforward": "No",
+    "notes": "Included for completeness: relevant for prior-year filings only (2021–2024) per CRA.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/child-family-benefits/canada-carbon-rebate.html"
+    ]
+  },
+  {
+    "id": "row_95",
+    "name": "Advanced Canada workers benefit (ACWB)",
+    "jurisdiction": "Federal",
+    "mechanism": "Advance payment (refundable credit)",
+    "impact": "Paid advance / reconciled on return",
+    "refundableFlag": true,
+    "lineForm": "Line 41500",
+    "eligibilitySummary": "Eligible recipients of Canada Workers Benefit may receive advance payments.",
+    "calcSummary": "Advance payments are credited against total CWB entitlement when filing the return.",
+    "spousalTransfer": "Family-based",
+    "carryforward": "No",
+    "notes": "Reported on return to reconcile with final CWB calculation.",
+    "sourceUrls": [
+      "https://www.canada.ca/en/revenue-agency/services/tax/individuals/topics/about-your-tax-return/tax-return/completing-a-tax-return/deductions-credits-expenses/deductions-credits-expenses.html"
+    ]
+  },
+  {
+    "id": "row_96",
+    "name": "Ontario Trillium Benefit (OTB) (bundle)",
+    "jurisdiction": "Ontario",
+    "mechanism": "Benefit (refundable credits bundle)",
+    "impact": "Paid benefit / refundable credit",
+    "refundableFlag": true,
+    "lineForm": "Based on ON-BEN and return assessment",
+    "eligibilitySummary": "Ontario residents eligible for one or more components (OSTC, OEPTC, NOEC).",
+    "calcSummary": "Payments issued separately from tax refund; monthly or single payment option available.",
+    "spousalTransfer": "Family-based; spousal application rules apply for OEPTC/NOEC",
+    "carryforward": "No",
+    "notes": "ON-BEN is used for OEPTC/NOEC/OSHPTG; OSTC is automatic per ON-BEN.",
+    "sourceUrls": [
+      "https://www.canada.ca/content/dam/cra-arc/formspubs/pbg/5006-tg/5006-tg-25e.pdf"
+    ]
+  }
+]

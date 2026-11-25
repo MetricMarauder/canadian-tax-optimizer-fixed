@@ -3,7 +3,7 @@
 > **Disclaimer**: This app is an **estimator** for educational/planning purposes. It is **not** official filing software and may not match CRA or Revenu Québec results in all cases.
 
 ## What this repo does
-- Estimates the **refund or amount owing** for an individual or couple in **any province or territory**, for the **2025** and **2026** tax years (province and year selectors in the UI; `province` and `year` in the API).
+- Estimates the **refund or amount owing** for an individual or couple in **any province or territory**, for the **2025** and **2026** tax years (province and year selectors in the UI; `province` and `year` in `calculate()`).
 - Shows **benefits paid separately** (Canada Groceries and Essentials Benefit, Canada child benefit, provincial benefits) apart from the refund.
 - Optimizes household claims between spouses (donations, child care, benefits, CWB, spouse amount, tuition and disability transfers).
 - Produces an **explainable breakdown** per jurisdiction and per row of the Excel catalog (`ontario_federal_tax_credits_2025.xlsx`, Federal + Ontario rows).
@@ -11,7 +11,7 @@
 
 ## Tech stack
 - Next.js + TypeScript
-- API: `app/api/calculate/route.ts`
+- Static export (`output: 'export'`): all calculation runs in the browser via `lib/api/calculate.ts`, so no income data leaves the user's device
 - Validation: zod
 - Excel parsing: `xlsx`
 - Tests: Vitest
@@ -92,14 +92,17 @@ Not modelled: self-employment, non-eligible dividends, pension income/splitting,
 ## Where the numbers come from
 `scripts/generate-config.py` holds every parameter, with notes on anything that is an estimate. Sources: CRA indexation and payroll tables, Finance Canada, Revenu Québec, provincial budgets and finance ministry pages, KPMG and RCGT 2025/2026 tax tables, and CRA benefit pages. `tests/provinces.test.ts` checks the 2026 Ontario, New Brunswick and Quebec parameters against published tax tables. See `docs/UPDATING_TAX_YEARS.md` for the yearly update process.
 
-## API
-`POST /api/calculate`
+## Calculation entry point
+`calculate(input)` in `lib/api/calculate.ts` validates the input and returns the result. It runs in the browser; there is no server API.
 
-```json
-{ "year": 2026, "province": "BC", "household": { "maritalStatus": "single" }, "taxpayer": { "age": 30, "income": { "employment": 60000 }, "deductions": {}, "credits": {}, "benefits": {} } }
+```ts
+calculate({ year: 2026, province: 'BC', household: { maritalStatus: 'single' }, taxpayer: { age: 30, income: { employment: 60000 }, deductions: {}, credits: {}, benefits: {} } });
 ```
 
 `province` accepts a code (`BC`) or a name (`British Columbia`); `year` defaults to 2025. Request/response types are in `lib/api/types.ts`; validation is in `lib/api/schema.ts`.
+
+## Deploying
+`npm run build` writes a static site to `out/`. Any static host works, e.g. Cloudflare Pages with build command `npm run build` and output directory `out`.
 
 ## Tests
 Run:
