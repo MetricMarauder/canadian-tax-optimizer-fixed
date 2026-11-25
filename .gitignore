@@ -4,4 +4,7 @@ out
 .env
 .DS_Store
 *.log
+
+# build/test artifacts
+*.tsbuildinfo
 .vitest/
