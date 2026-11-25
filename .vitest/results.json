@@ -1,1 +1,0 @@
-{"version":"1.6.0","results":[[":tests/deduction_cap.test.ts",{"duration":7,"failed":false}],[":tests/brackets.test.ts",{"duration":8,"failed":false}],[":tests/credit_phaseout.test.ts",{"duration":9,"failed":false}],[":tests/refundable_benefit.test.ts",{"duration":9,"failed":false}],[":tests/scenarios.test.ts",{"duration":19,"failed":true}]]}
