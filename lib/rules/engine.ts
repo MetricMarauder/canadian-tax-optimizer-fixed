@@ -1,8 +1,7 @@
 import mappingRaw from '@/lib/rules/mapping/rules_mapping.json';
-import type { AppliedItem, ExplanationItem, Jurisdiction } from '@/lib/api/types';
+import type { AppliedItem, ExplanationItem } from '@/lib/api/types';
 import type { RuleItem, UserContext } from '@/lib/rules/types';
-import taxConfig from '@/lib/tax/config/2025.json';
-import { IMPLEMENTED_RULES, estimateTaxableIncome, normalizeKey } from '@/lib/rules/implemented';
+import { IMPLEMENTED_RULES, normalizeKey } from '@/lib/rules/implemented';
 
 type MappingEntry = {
   prong: 'A' | 'B' | 'C';
@@ -10,9 +9,14 @@ type MappingEntry = {
   jurisdiction: 'Federal' | 'Ontario' | 'Both';
   requiredInputs: string[];
   params: Record<string, any>;
+  /** Computed by the provincial calculator (lib/tax/provincial.ts), not by the rules engine. */
+  provincial?: boolean;
 };
 
 const mapping: Record<string, MappingEntry> = mappingRaw as any;
+
+/** Marker reason for provincial catalog rows; lib/tax/calculate.ts replaces it. */
+export const PROVINCIAL_PLACEHOLDER = '__provincial__';
 
 const ALIAS_KEYS: Record<string, string> = {
   [normalizeKey('RRSP/PRPP deduction')]: 'RRSP deduction',
@@ -24,39 +28,34 @@ const ALIAS_KEYS: Record<string, string> = {
   [normalizeKey('First Home Savings Account deduction')]: 'FHSA deduction',
   [normalizeKey('FHSA contributions')]: 'FHSA deduction',
   [normalizeKey('Tuition amounts')]: 'Tuition amount',
-  [normalizeKey('Unused tuition and education amounts (Ontario)')]: 'Ontario tuition amount',
   [normalizeKey('Disability amount for self (DTC)')]: 'Disability amount',
-  [normalizeKey('Disability amount for self (Ontario)')]: 'Ontario disability amount',
-  [normalizeKey('Ontario childcare access and relief from expenses (CARE) tax credit')]: 'Ontario CARE child care tax credit',
   [normalizeKey('Canada workers benefit (CWB)')]: 'Canada workers benefit',
-  [normalizeKey('Ontario Sales Tax Credit (OSTC)')]: 'Ontario sales tax credit',
-};
-
-const JURISDICTION_OVERRIDES: Record<string, Partial<Record<Jurisdiction, string>>> = {
-  [normalizeKey('Basic personal amount')]: {
-    Ontario: 'Ontario basic personal amount',
-    Federal: 'Basic personal amount',
-  },
-  [normalizeKey('Disability amount for self')]: {
-    Ontario: 'Ontario disability amount',
-    Federal: 'Disability amount',
-  },
+  [normalizeKey('Canada child benefit (CCB)')]: 'Canada child benefit',
 };
 
 export type EngineOutput = {
   deductionsApplied: AppliedItem[];
   federalNonRefundableCredits: AppliedItem[];
-  ontarioNonRefundableCredits: AppliedItem[];
+  /** Refundable credits claimed on the return (change the refund / balance owing). */
   refundableCreditsAndBenefitsApplied: AppliedItem[];
+  /** Benefits paid separately by CRA after assessment (e.g. CGEB, CCB) — not part of the refund. */
+  benefitsPaidSeparately: AppliedItem[];
   explanation: ExplanationItem[];
 };
 
+/**
+ * Runs the federal rules for every catalog row. Rows that belong to a province (the catalog's
+ * Ontario rows) are left as placeholders: the provincial calculator fills them in for Ontario
+ * residents and marks them "not applicable" for other provinces.
+ */
 export function runRules(items: RuleItem[], ctx: UserContext): EngineOutput {
   const deductionsApplied: AppliedItem[] = [];
   const federalNonRefundableCredits: AppliedItem[] = [];
-  const ontarioNonRefundableCredits: AppliedItem[] = [];
   const refundableCreditsAndBenefitsApplied: AppliedItem[] = [];
+  const benefitsPaidSeparately: AppliedItem[] = [];
   const explanation: ExplanationItem[] = [];
+  // Several catalog rows can map to the same rule; each rule must only be applied once.
+  const appliedRuleKeys = new Map<string, string>();
 
   const normalizeMapKey = new Map<string, string>();
   for (const key of Object.keys(mapping)) {
@@ -70,8 +69,13 @@ export function runRules(items: RuleItem[], ctx: UserContext): EngineOutput {
 
   for (const item of items) {
     const normalizedName = normalizeKey(item.name);
-    const override = JURISDICTION_OVERRIDES[normalizedName]?.[item.jurisdiction];
-    const key = override ?? normalizeMapKey.get(normalizedName);
+    const key = normalizeMapKey.get(normalizedName);
+
+    if (item.jurisdiction === 'Ontario' || (key && mapping[key].provincial)) {
+      explanation.push(makeExplain(item, false, 0, PROVINCIAL_PLACEHOLDER));
+      continue;
+    }
+
     if (!key) {
       explanation.push(makeExplain(item, false, 0, 'Not yet mapped in rules_mapping.json'));
       continue;
@@ -83,41 +87,34 @@ export function runRules(items: RuleItem[], ctx: UserContext): EngineOutput {
       continue;
     }
 
+    const ruleKey = normalizeKey(key);
+    const firstRow = appliedRuleKeys.get(ruleKey);
+    if (firstRow) {
+      explanation.push(makeExplain(item, false, 0, `Already included in the calculation for "${firstRow}".`));
+      continue;
+    }
+    appliedRuleKeys.set(ruleKey, item.name);
+
     const meta = mapping[key];
     const res = ruleFn(ctx, meta.params);
 
-    // Special case: donations are jurisdiction-split but often appear as one row.
-    if (normalizeKey(key) === 'donations and gifts') {
-      const split = splitDonations(ctx);
-      if (split.federal > 0) federalNonRefundableCredits.push(makeApplied(item, 'Federal', split.federal));
-      if (split.ontario > 0) ontarioNonRefundableCredits.push(makeApplied(item, 'Ontario', split.ontario));
-      explanation.push(makeExplain(item, split.federal + split.ontario > 0, split.federal + split.ontario, res.reason));
-      continue;
-    }
-
-    const jurisdictionTargets = meta.jurisdiction === 'Both' ? (['Federal', 'Ontario'] as Jurisdiction[]) : ([meta.jurisdiction] as Jurisdiction[]);
-
     if (res.kind === 'deduction') {
-      deductionsApplied.push(makeApplied(item, 'Federal', res.amount));
+      deductionsApplied.push(makeApplied(item, res.amount));
     } else if (res.kind === 'nonRefundableCredit') {
-      for (const j of jurisdictionTargets) {
-        if (j === 'Federal') federalNonRefundableCredits.push(makeApplied(item, j, res.amount));
-        if (j === 'Ontario') ontarioNonRefundableCredits.push(makeApplied(item, j, res.amount));
-      }
-    } else {
-      for (const j of jurisdictionTargets) {
-        refundableCreditsAndBenefitsApplied.push(makeApplied(item, j, res.amount));
-      }
+      federalNonRefundableCredits.push(makeApplied(item, res.amount));
+    } else if (res.amount > 0) {
+      const target = meta.params?.paidSeparately ? benefitsPaidSeparately : refundableCreditsAndBenefitsApplied;
+      target.push(makeApplied(item, res.amount));
     }
 
-    explanation.push(makeExplain(item, res.applied, res.amount, res.reason));
+    explanation.push(makeExplain(item, res.applied, Math.round(res.amount * 100) / 100, res.reason));
   }
 
   return {
     deductionsApplied,
     federalNonRefundableCredits,
-    ontarioNonRefundableCredits,
     refundableCreditsAndBenefitsApplied,
+    benefitsPaidSeparately,
     explanation,
   };
 }
@@ -136,33 +133,13 @@ function makeExplain(item: RuleItem, applied: boolean, amountApplied: number, re
   };
 }
 
-function makeApplied(item: RuleItem, jurisdiction: Jurisdiction, amount: number): AppliedItem {
+function makeApplied(item: RuleItem, amount: number): AppliedItem {
   return {
     id: item.id,
     name: item.name,
-    jurisdiction,
+    jurisdiction: 'Federal',
     mechanism: item.mechanism,
     lineForm: item.lineForm,
     amount,
   };
-}
-
-function splitDonations(ctx: UserContext): { federal: number; ontario: number } {
-  const donations = Math.max(0, ctx.credits.donations);
-  const first = Math.min(200, donations);
-  const rest = Math.max(0, donations - 200);
-
-  const taxableIncome = estimateTaxableIncome(ctx);
-  const fedCfg = taxConfig.federal.donationCredit;
-  const restRate = taxableIncome > fedCfg.topRateIncomeThreshold ? fedCfg.over200TopRate : fedCfg.over200Rate;
-  const federal = round2(first * fedCfg.first200Rate + rest * restRate);
-
-  const onCfg = taxConfig.ontario.donationCredit;
-  const ontario = round2(first * onCfg.first200Rate + rest * onCfg.over200Rate);
-
-  return { federal, ontario };
-}
-
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
 }

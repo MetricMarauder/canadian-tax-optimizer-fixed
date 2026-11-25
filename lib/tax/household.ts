@@ -1,4 +1,5 @@
-import taxConfig from '@/lib/tax/config/2025.json';
+import { DEFAULT_YEAR, getConfig, getProvince, type ProvinceConfig, type TaxYearConfig } from '@/lib/tax/config';
+import { provincialBpa, provincialSpouseAmountBase } from '@/lib/tax/provincial';
 import type {
   CalculateRequest,
   CalculateResponse,
@@ -10,7 +11,7 @@ import type { CalculationOverrides } from '@/lib/tax/calculate';
 import type { UserContext } from '@/lib/rules/types';
 import type { RuleItem } from '@/lib/rules/types';
 import { loadRuleItems } from '@/lib/excel/loadCredits';
-import { calculateTax, calculateTaxFromItems } from '@/lib/tax/calculate';
+import { EXCEL_PATH, buildContext, calculateTax, calculateTaxFromItems } from '@/lib/tax/calculate';
 import { estimateNetIncome, normalizeKey } from '@/lib/rules/implemented';
 
 /**
@@ -36,7 +37,7 @@ type OptimizationPlan = {
   personalAmountClaimant: Claimant;
   disabilityTransferFrom: Claimant;
   disabilityTransferFederalBase: number;
-  disabilityTransferOntarioBase: number;
+  disabilityTransferProvincialBase: number;
   tuitionTransferFromTaxpayer: number;
   tuitionTransferFromSpouse: number;
 };
@@ -48,11 +49,15 @@ type Evaluation = {
   household: CalculateResponse['household'];
   personalAmountClaimant: Claimant;
   personalAmountFederalCredit: number;
-  personalAmountOntarioCredit: number;
+  personalAmountProvincialCredit: number;
   score: number;
 };
 
 type OptimizationContext = {
+  year: number;
+  housing: UserContext['housing'];
+  cfg: TaxYearConfig;
+  prov: ProvinceConfig;
   maritalStatus: HouseholdSettings['maritalStatus'];
   taxpayerBase: PersonInput;
   spouseBase: PersonInput;
@@ -77,21 +82,12 @@ type TransferCreditSplit = {
 type TransferBaseCaps = {
   tuition: number;
   disabilityFederal: number;
-  disabilityOntario: number;
+  disabilityProvincial: number;
 };
 
-const EXCEL_PATH = 'ontario_federal_tax_credits_2025.xlsx';
 const TUITION_TRANSFER_MAX = 5000;
-const ONTARIO_SPOUSAL_AMOUNT_BASE = 11905;
 const FEDERAL_SPOUSAL_CREDIT_NAME = 'Spouse or common-law partner amount (line 30300)';
-const ONTARIO_SPOUSAL_CREDIT_NAME = 'Ontario spouse or common-law partner amount (line 58120)';
 
-export async function calculateReturn(person: PersonInput, ctx: ReturnContext): Promise<ReturnResult> {
-  // In MVP: compute that person’s return with an estimated spouse net income for benefits.
-  // Later: apply spouse-amount + transfers based on ctx.household.claimant, spouse net income, etc.
-  const spouseNetIncome = ctx.spouse ? estimateNetIncome(buildUserContext(ctx.spouse, ctx.household.maritalStatus)) : 0;
-  return calculateTax(person, ctx.household.maritalStatus, spouseNetIncome);
-}
 
 export function combineHousehold(taxpayer: ReturnResult, spouse?: ReturnResult) {
   const taxesWithheldTotal = round2(taxpayer.taxesWithheld + (spouse?.taxesWithheld ?? 0));
@@ -101,12 +97,16 @@ export function combineHousehold(taxpayer: ReturnResult, spouse?: ReturnResult) 
 
   // refund/owing = withheld - payable + refundable/benefits
   const refundOrOwing = round2(taxesWithheldTotal - taxPayableTotal + refundableCreditsAndBenefitsTotal);
+  const benefitsPaidSeparatelyTotal = round2(
+    taxpayer.benefitsPaidSeparatelyTotal + (spouse?.benefitsPaidSeparatelyTotal ?? 0)
+  );
 
   return {
     refundOrOwing,
     taxesWithheldTotal,
     taxPayableTotal,
     refundableCreditsAndBenefitsTotal,
+    benefitsPaidSeparatelyTotal,
   };
 }
 
@@ -119,32 +119,51 @@ export function calculateOptimizedHouseholdFromItems(
   req: CalculateRequest,
   items: RuleItem[]
 ): CalculateResponse {
+  const year = req.year ?? DEFAULT_YEAR;
+  const cfg = getConfig(year);
+  const province = req.province;
+  const taxpayerInput = { ...req.taxpayer, province };
+  const housing = {
+    rentPaid: req.household.rentPaid ?? 0,
+    propertyTaxPaid: req.household.propertyTaxPaid ?? 0,
+    northernOntario: req.household.northernOntario ?? false,
+  };
   if (!req.spouse || req.household.maritalStatus === 'single') {
-    const taxpayer = calculateTaxFromItems(req.taxpayer, req.household.maritalStatus, 0, items);
+    const taxpayer = calculateTaxFromItems(taxpayerInput, req.household.maritalStatus, 0, items, { year, housing });
     return {
+      year,
+      province,
       household: combineHousehold(taxpayer),
       taxpayer,
     };
   }
 
   const ctx: OptimizationContext = {
+    year,
+    housing,
+    cfg,
+    prov: getProvince(cfg, province),
     maritalStatus: req.household.maritalStatus,
-    taxpayerBase: normalizePerson(req.taxpayer),
-    spouseBase: normalizePerson(req.spouse),
+    taxpayerBase: normalizePerson(taxpayerInput),
+    spouseBase: normalizePerson({ ...req.spouse, province }),
     items,
     tuitionTransferCap: resolveTuitionTransferCap(req),
     cache: new Map<string, Evaluation>(),
   };
 
+  const totalChildCareExpenses =
+    ctx.taxpayerBase.deductions.childCareExpenses + ctx.spouseBase.deductions.childCareExpenses;
   const initialPlan: OptimizationPlan = {
     donationsClaimant: null,
-    childCareClaimant: null,
+    // CRA rule: the spouse with the lower net income generally must claim child care expenses
+    // (exceptions such as full-time school, incarceration or infirmity are not modelled).
+    childCareClaimant: totalChildCareExpenses > 0 ? lowerNetIncomeSpouse(ctx) : null,
     benefitClaimant: req.household.claimant,
     cwbClaimant: req.household.claimant,
     personalAmountClaimant: req.household.claimant,
     disabilityTransferFrom: null,
     disabilityTransferFederalBase: 0,
-    disabilityTransferOntarioBase: 0,
+    disabilityTransferProvincialBase: 0,
     tuitionTransferFromTaxpayer: 0,
     tuitionTransferFromSpouse: 0,
   };
@@ -162,37 +181,40 @@ export function calculateOptimizedHouseholdFromItems(
     ctx.spouseBase.benefits.cwbDisabilityEligible;
   const tuitionNet = round2(best.plan.tuitionTransferFromSpouse - best.plan.tuitionTransferFromTaxpayer);
   const tuitionTransferAmount = Math.abs(tuitionNet);
-  const tuitionFederalCreditTransferred = round2(tuitionTransferAmount * taxConfig.federal.lowestRate);
-  const tuitionOntarioCreditTransferred = round2(tuitionTransferAmount * taxConfig.ontario.lowestRate);
+  const tuitionFederalCreditTransferred = round2(tuitionTransferAmount * cfg.federal.lowestRate);
+  // Provincial tuition credits are not modelled (Ontario's was eliminated in 2017), so nothing transfers provincially.
+  const tuitionProvincialCreditTransferred = 0;
   const taxpayer = annotateReturnWithTransfers(best.taxpayer, best.plan, 'taxpayer');
   const spouse = annotateReturnWithTransfers(best.spouse, best.plan, 'spouse');
 
   return {
+    year,
+    province,
     household: best.household,
     taxpayer,
     spouse,
     transferSummary: {
       tuitionTransferAmount,
       tuitionFederalCreditTransferred,
-      tuitionOntarioCreditTransferred,
+      tuitionProvincialCreditTransferred,
       tuitionTransferFromTaxpayer: best.plan.tuitionTransferFromTaxpayer,
       tuitionTransferFromSpouse: best.plan.tuitionTransferFromSpouse,
       tuitionNetTo: tuitionNet > 0 ? 'taxpayer' : tuitionNet < 0 ? 'spouse' : null,
       tuitionNetAmount: tuitionTransferAmount,
       personalAmountClaimant:
-        best.personalAmountFederalCredit > 0 || best.personalAmountOntarioCredit > 0
+        best.personalAmountFederalCredit > 0 || best.personalAmountProvincialCredit > 0
           ? best.personalAmountClaimant
           : null,
       personalAmountFederalCredit: best.personalAmountFederalCredit,
-      personalAmountOntarioCredit: best.personalAmountOntarioCredit,
+      personalAmountProvincialCredit: best.personalAmountProvincialCredit,
       donationsClaimant: totalDonations > 0 ? best.plan.donationsClaimant : null,
       childCareClaimant: totalChildCare > 0 ? best.plan.childCareClaimant : null,
       disabilityTransferFrom:
-        best.plan.disabilityTransferFederalBase > 0 || best.plan.disabilityTransferOntarioBase > 0
+        best.plan.disabilityTransferFederalBase > 0 || best.plan.disabilityTransferProvincialBase > 0
           ? best.plan.disabilityTransferFrom
           : null,
       disabilityTransferFederalBase: best.plan.disabilityTransferFederalBase,
-      disabilityTransferOntarioBase: best.plan.disabilityTransferOntarioBase,
+      disabilityTransferProvincialBase: best.plan.disabilityTransferProvincialBase,
       benefitClaimant: hasBenefitEligibility ? best.plan.benefitClaimant : null,
       cwbClaimant: hasCwbEligibility ? best.plan.cwbClaimant : null,
     },
@@ -213,16 +235,16 @@ function annotateReturnWithTransfers(
       (plan.disabilityTransferFrom === 'spouse' && role === 'taxpayer'))
       ? plan.disabilityTransferFederalBase
       : 0;
-  const disabilityInOntario =
+  const disabilityInProvincial =
     plan.disabilityTransferFrom &&
     ((plan.disabilityTransferFrom === 'taxpayer' && role === 'spouse') ||
       (plan.disabilityTransferFrom === 'spouse' && role === 'taxpayer'))
-      ? plan.disabilityTransferOntarioBase
+      ? plan.disabilityTransferProvincialBase
       : 0;
   const disabilityOutFederal =
     plan.disabilityTransferFrom === role ? plan.disabilityTransferFederalBase : 0;
-  const disabilityOutOntario =
-    plan.disabilityTransferFrom === role ? plan.disabilityTransferOntarioBase : 0;
+  const disabilityOutProvincial =
+    plan.disabilityTransferFrom === role ? plan.disabilityTransferProvincialBase : 0;
 
   return {
     ...result,
@@ -236,13 +258,13 @@ function annotateReturnWithTransfers(
         counterpart,
       }),
     },
-    ontario: {
-      ...result.ontario,
-      creditsApplied: annotateCredits(result.ontario.creditsApplied, {
+    provincial: {
+      ...result.provincial,
+      creditsApplied: annotateCredits(result.provincial.creditsApplied, {
         tuitionIn: transferIn,
         tuitionOut: transferOut,
-        disabilityIn: disabilityInOntario,
-        disabilityOut: disabilityOutOntario,
+        disabilityIn: disabilityInProvincial,
+        disabilityOut: disabilityOutProvincial,
         counterpart,
       }),
     },
@@ -278,164 +300,90 @@ function annotateCredits(
   });
 }
 
-function applySpousalPersonalAmountTransfer(
-  requestedClaimant: Claimant,
-  maritalStatus: HouseholdSettings['maritalStatus'],
-  taxpayer: ReturnResult,
-  spouse: ReturnResult,
-  taxpayerNetIncome: number,
-  spouseNetIncome: number
-): {
+type SpousalAmount = {
   claimant: Claimant;
   federalCredit: number;
-  ontarioCredit: number;
-  taxpayer: ReturnResult;
-  spouse: ReturnResult;
-} {
-  if (maritalStatus === 'single' || !requestedClaimant) {
-    return {
-      claimant: null,
-      federalCredit: 0,
-      ontarioCredit: 0,
-      taxpayer,
-      spouse,
-    };
+  provincialCredit: number;
+};
+
+/**
+ * Spouse or common-law partner amount (federal line 30300 / provincial equivalent), claimed by
+ * `requestedClaimant` based on the other spouse's net income.
+ */
+function computeSpousalAmount(
+  ctx: OptimizationContext,
+  requestedClaimant: Claimant,
+  taxpayerNetIncome: number,
+  spouseNetIncome: number
+): SpousalAmount {
+  if (ctx.maritalStatus === 'single' || !requestedClaimant) {
+    return { claimant: null, federalCredit: 0, provincialCredit: 0 };
   }
-
-  if (requestedClaimant === 'taxpayer') {
-    const credits = computeSpousalPersonalAmountCredits(taxpayerNetIncome, spouseNetIncome);
-    if (credits.federal <= 0 && credits.ontario <= 0) {
-      return {
-        claimant: null,
-        federalCredit: 0,
-        ontarioCredit: 0,
-        taxpayer,
-        spouse,
-      };
-    }
-
-    return {
-      claimant: 'taxpayer',
-      federalCredit: credits.federal,
-      ontarioCredit: credits.ontario,
-      taxpayer: applySpousalPersonalAmountToReturn(taxpayer, credits.federal, credits.ontario, 'spouse'),
-      spouse,
-    };
+  const credits =
+    requestedClaimant === 'taxpayer'
+      ? computeSpousalPersonalAmountCredits(ctx, taxpayerNetIncome, spouseNetIncome)
+      : computeSpousalPersonalAmountCredits(ctx, spouseNetIncome, taxpayerNetIncome);
+  if (credits.federal <= 0 && credits.provincial <= 0) {
+    return { claimant: null, federalCredit: 0, provincialCredit: 0 };
   }
+  return { claimant: requestedClaimant, federalCredit: credits.federal, provincialCredit: credits.provincial };
+}
 
-  const credits = computeSpousalPersonalAmountCredits(spouseNetIncome, taxpayerNetIncome);
-  if (credits.federal <= 0 && credits.ontario <= 0) {
-    return {
-      claimant: null,
-      federalCredit: 0,
-      ontarioCredit: 0,
-      taxpayer,
-      spouse,
-    };
-  }
-
+function spousalExtraCredits(
+  ctx: OptimizationContext,
+  amount: SpousalAmount,
+  role: 'taxpayer' | 'spouse'
+): CalculationOverrides['extraCredits'] {
+  if (amount.claimant !== role) return undefined;
+  const from = role === 'taxpayer' ? 'spouse' : 'taxpayer';
   return {
-    claimant: 'spouse',
-    federalCredit: credits.federal,
-    ontarioCredit: credits.ontario,
-    taxpayer,
-    spouse: applySpousalPersonalAmountToReturn(spouse, credits.federal, credits.ontario, 'taxpayer'),
+    federal:
+      amount.federalCredit > 0
+        ? [
+            {
+              name: `${FEDERAL_SPOUSAL_CREDIT_NAME} (based on ${from}'s net income)`,
+              amount: amount.federalCredit,
+              jurisdiction: 'Federal',
+              lineForm: 'Line 30300',
+            },
+          ]
+        : [],
+    provincial:
+      amount.provincialCredit > 0
+        ? [
+            {
+              name: `Spouse or common-law partner amount (${ctx.prov.name}, based on ${from}'s net income)`,
+              amount: amount.provincialCredit,
+              jurisdiction: ctx.prov.name,
+            },
+          ]
+        : [],
   };
 }
 
 function computeSpousalPersonalAmountCredits(
+  ctx: OptimizationContext,
   claimantNetIncome: number,
   spouseNetIncome: number
-): { federal: number; ontario: number } {
-  const claimantFederalBase = federalBasicPersonalAmountBase(claimantNetIncome);
+): { federal: number; provincial: number } {
+  const claimantFederalBase = federalBasicPersonalAmountBase(ctx.cfg, claimantNetIncome);
   const donorNetIncome = Math.max(0, spouseNetIncome);
   const federalBase = Math.max(0, claimantFederalBase - donorNetIncome);
-  const ontarioBase = Math.max(0, ONTARIO_SPOUSAL_AMOUNT_BASE - donorNetIncome);
+  const provincialBase = provincialSpouseAmountBase(ctx.cfg, ctx.prov, claimantNetIncome, donorNetIncome);
 
   return {
-    federal: round2(federalBase * taxConfig.federal.lowestRate),
-    ontario: round2(ontarioBase * taxConfig.ontario.lowestRate),
+    federal: round2(federalBase * ctx.cfg.federal.lowestRate),
+    provincial: round2(provincialBase * ctx.prov.lowestRate),
   };
 }
 
-function federalBasicPersonalAmountBase(netIncome: number): number {
-  const cfg = taxConfig.federal.basicPersonalAmount;
+function federalBasicPersonalAmountBase(cfg: TaxYearConfig, netIncome: number): number {
+  const b = cfg.federal.basicPersonalAmount;
   const income = Math.max(0, netIncome);
-  if (income >= cfg.phaseoutEnd) return cfg.min;
-  if (income <= cfg.phaseoutStart) return cfg.base;
-  const frac = (income - cfg.phaseoutStart) / (cfg.phaseoutEnd - cfg.phaseoutStart);
-  return round2(cfg.base - frac * (cfg.base - cfg.min));
-}
-
-function applySpousalPersonalAmountToReturn(
-  result: ReturnResult,
-  federalCredit: number,
-  ontarioCredit: number,
-  from: 'taxpayer' | 'spouse'
-): ReturnResult {
-  const updatedFederalCredits =
-    federalCredit > 0
-      ? [
-          ...result.federal.creditsApplied,
-          {
-            name: `${FEDERAL_SPOUSAL_CREDIT_NAME} (transferred from ${from})`,
-            amount: federalCredit,
-            jurisdiction: 'Federal' as const,
-            lineForm: 'Line 30300',
-          },
-        ]
-      : result.federal.creditsApplied;
-  const updatedOntarioCredits =
-    ontarioCredit > 0
-      ? [
-          ...result.ontario.creditsApplied,
-          {
-            name: `${ONTARIO_SPOUSAL_CREDIT_NAME} (transferred from ${from})`,
-            amount: ontarioCredit,
-            jurisdiction: 'Ontario' as const,
-            lineForm: 'Line 58120',
-          },
-        ]
-      : result.ontario.creditsApplied;
-
-  const federalNonRefundableCreditsTotal = round2(result.federal.nonRefundableCreditsTotal + federalCredit);
-  const federalTaxAfterCredits = Math.max(0, round2(result.federal.taxBeforeCredits - federalNonRefundableCreditsTotal));
-  const ontarioNonRefundableCreditsTotal = round2(result.ontario.nonRefundableCreditsTotal + ontarioCredit);
-  const ontarioTaxAfterCredits = computeOntarioTaxAfterCredits(
-    result.ontario.taxBeforeCredits,
-    ontarioNonRefundableCreditsTotal
-  );
-
-  const taxPayableTotal = round2(federalTaxAfterCredits + ontarioTaxAfterCredits);
-  const refundOrOwing = round2(
-    result.taxesWithheld - taxPayableTotal + result.refundableCreditsAndBenefitsTotal
-  );
-
-  return {
-    ...result,
-    refundOrOwing,
-    taxPayableTotal,
-    federal: {
-      ...result.federal,
-      creditsApplied: updatedFederalCredits,
-      nonRefundableCreditsTotal: federalNonRefundableCreditsTotal,
-      taxAfterCredits: federalTaxAfterCredits,
-    },
-    ontario: {
-      ...result.ontario,
-      creditsApplied: updatedOntarioCredits,
-      nonRefundableCreditsTotal: ontarioNonRefundableCreditsTotal,
-      taxAfterCredits: ontarioTaxAfterCredits,
-    },
-  };
-}
-
-function computeOntarioTaxAfterCredits(taxBeforeCredits: number, nonRefundableCreditsTotal: number): number {
-  const preSurtaxTax = Math.max(0, round2(taxBeforeCredits - nonRefundableCreditsTotal));
-  const { threshold1Tax, rate1, threshold2Tax, rate2 } = taxConfig.ontario.surtax;
-  const s1 = Math.max(0, (preSurtaxTax - threshold1Tax) * rate1);
-  const s2 = Math.max(0, (preSurtaxTax - threshold2Tax) * rate2);
-  return round2(preSurtaxTax + round2(s1 + s2));
+  if (income >= b.phaseoutEnd) return b.min;
+  if (income <= b.phaseoutStart) return b.base;
+  const frac = (income - b.phaseoutStart) / (b.phaseoutEnd - b.phaseoutStart);
+  return round2(b.base - frac * (b.base - b.min));
 }
 
 function optimizePlan(initialPlan: OptimizationPlan, ctx: OptimizationContext): Evaluation {
@@ -454,15 +402,6 @@ function optimizePlan(initialPlan: OptimizationPlan, ctx: OptimizationContext): 
       ctx
     );
 
-    best = pickBest(
-      best,
-      [
-        { ...best.plan, childCareClaimant: null },
-        { ...best.plan, childCareClaimant: 'taxpayer' },
-        { ...best.plan, childCareClaimant: 'spouse' },
-      ],
-      ctx
-    );
 
     best = pickBest(
       best,
@@ -509,7 +448,7 @@ function disabilityCandidates(plan: OptimizationPlan, ctx: OptimizationContext):
       ...plan,
       disabilityTransferFrom: null,
       disabilityTransferFederalBase: 0,
-      disabilityTransferOntarioBase: 0,
+      disabilityTransferProvincialBase: 0,
     },
   ];
   const ratios = [0.25, 0.5, 0.75, 1];
@@ -519,8 +458,8 @@ function disabilityCandidates(plan: OptimizationPlan, ctx: OptimizationContext):
       out.push({
         ...plan,
         disabilityTransferFrom: 'taxpayer',
-        disabilityTransferFederalBase: round2(taxConfig.federal.disabilityAmount * ratio),
-        disabilityTransferOntarioBase: round2(taxConfig.ontario.disabilityAmount * ratio),
+        disabilityTransferFederalBase: round2(ctx.cfg.federal.disabilityAmount * ratio),
+        disabilityTransferProvincialBase: round2(ctx.prov.disabilityAmount * ratio),
       });
     }
   }
@@ -530,8 +469,8 @@ function disabilityCandidates(plan: OptimizationPlan, ctx: OptimizationContext):
       out.push({
         ...plan,
         disabilityTransferFrom: 'spouse',
-        disabilityTransferFederalBase: round2(taxConfig.federal.disabilityAmount * ratio),
-        disabilityTransferOntarioBase: round2(taxConfig.ontario.disabilityAmount * ratio),
+        disabilityTransferFederalBase: round2(ctx.cfg.federal.disabilityAmount * ratio),
+        disabilityTransferProvincialBase: round2(ctx.prov.disabilityAmount * ratio),
       });
     }
   }
@@ -584,8 +523,8 @@ function evaluatePlan(plan: OptimizationPlan, ctx: OptimizationContext): Evaluat
 
   const basePrepared = applyPlanBase(requested, ctx);
 
-  const taxpayerNetIncome = estimateNetIncome(buildUserContext(basePrepared.taxpayer, ctx.maritalStatus));
-  const spouseNetIncome = estimateNetIncome(buildUserContext(basePrepared.spouse, ctx.maritalStatus));
+  const taxpayerNetIncome = estimateNetIncome(buildUserContext(ctx, basePrepared.taxpayer));
+  const spouseNetIncome = estimateNetIncome(buildUserContext(ctx, basePrepared.spouse));
   const taxpayerSpouseNetIncome = spouseNetIncome;
   const spouseSpouseNetIncome = taxpayerNetIncome;
 
@@ -619,39 +558,38 @@ function evaluatePlan(plan: OptimizationPlan, ctx: OptimizationContext): Evaluat
   }
 
   const prepared = applyPlanTransfers(basePrepared, normalized);
+  const spousal = computeSpousalAmount(
+    ctx,
+    normalized.personalAmountClaimant,
+    taxpayerNetIncome,
+    spouseNetIncome
+  );
   const taxpayer = calculateTaxFromItems(
     prepared.taxpayer,
     ctx.maritalStatus,
     taxpayerSpouseNetIncome,
     ctx.items,
-    prepared.taxpayerOverrides
+    { ...prepared.taxpayerOverrides, extraCredits: spousalExtraCredits(ctx, spousal, 'taxpayer') }
   );
   const spouse = calculateTaxFromItems(
     prepared.spouse,
     ctx.maritalStatus,
     spouseSpouseNetIncome,
     ctx.items,
-    prepared.spouseOverrides
+    { ...prepared.spouseOverrides, extraCredits: spousalExtraCredits(ctx, spousal, 'spouse') }
   );
-  const withPersonalAmount = applySpousalPersonalAmountTransfer(
-    normalized.personalAmountClaimant,
-    ctx.maritalStatus,
-    taxpayer,
-    spouse,
-    taxpayerNetIncome,
-    spouseNetIncome
-  );
-  const household = combineHousehold(withPersonalAmount.taxpayer, withPersonalAmount.spouse);
+  const household = combineHousehold(taxpayer, spouse);
 
   const evaluated: Evaluation = {
     plan: normalized,
-    taxpayer: withPersonalAmount.taxpayer,
-    spouse: withPersonalAmount.spouse,
+    taxpayer,
+    spouse,
     household,
-    personalAmountClaimant: withPersonalAmount.claimant,
-    personalAmountFederalCredit: withPersonalAmount.federalCredit,
-    personalAmountOntarioCredit: withPersonalAmount.ontarioCredit,
-    score: household.refundOrOwing,
+    personalAmountClaimant: spousal.claimant,
+    personalAmountFederalCredit: spousal.federalCredit,
+    personalAmountProvincialCredit: spousal.provincialCredit,
+    // Household cash outcome: refund on the returns plus benefits CRA pays separately.
+    score: round2(household.refundOrOwing + household.benefitsPaidSeparatelyTotal),
   };
   ctx.cache.set(requestedKey, evaluated);
   ctx.cache.set(key, evaluated);
@@ -708,28 +646,46 @@ function applyPlanBase(plan: OptimizationPlan, ctx: OptimizationContext): Prepar
   const bothDisabilityCwbEligible =
     taxpayer.benefits.cwbDisabilityEligible && spouse.benefits.cwbDisabilityEligible;
 
+  const totalDependants =
+    ctx.taxpayerBase.deductions.numChildrenUnder7 +
+    ctx.taxpayerBase.deductions.numChildren7to16 +
+    ctx.taxpayerBase.deductions.numChildrenDTCEligible +
+    ctx.spouseBase.deductions.numChildrenUnder7 +
+    ctx.spouseBase.deductions.numChildren7to16 +
+    ctx.spouseBase.deductions.numChildrenDTCEligible;
+  const higherIncome = higherNetIncomeSpouse(ctx);
+
   const taxpayerOverrides: CalculationOverrides = {
     benefits: {
-      claimGstHstCredit: taxpayerClaimsBenefits,
-      claimOstc: taxpayerClaimsBenefits,
-      claimCareCredit: taxpayerClaimsBenefits,
+      claimHouseholdBenefits: taxpayerClaimsBenefits,
+      // CARE goes with the child care deduction (claimed by whoever deducts the expenses).
+      claimCareCredit: true,
       cwbClaimBasic: taxpayerClaimsCwb,
       cwbClaimDisability: taxpayerClaimsCwb,
       cwbDisabilityBothEligible: bothDisabilityCwbEligible,
     },
     credits: {},
+    year: ctx.year,
+    spouseEmploymentIncome: spouse.income.employment,
+    // Rent/property-tax based credits are claimed once, by the spouse who claims household benefits.
+    housing: taxpayerClaimsBenefits ? ctx.housing : undefined,
+    // Provincial low-income tax reduction: dependants are claimed by the higher-income spouse.
+    taxReductionDependants: higherIncome === 'taxpayer' ? totalDependants : 0,
   };
 
   const spouseOverrides: CalculationOverrides = {
     benefits: {
-      claimGstHstCredit: spouseClaimsBenefits,
-      claimOstc: spouseClaimsBenefits,
-      claimCareCredit: spouseClaimsBenefits,
+      claimHouseholdBenefits: spouseClaimsBenefits,
+      claimCareCredit: true,
       cwbClaimBasic: spouseClaimsCwb,
       cwbClaimDisability: spouseClaimsCwb,
       cwbDisabilityBothEligible: bothDisabilityCwbEligible,
     },
     credits: {},
+    year: ctx.year,
+    spouseEmploymentIncome: taxpayer.income.employment,
+    housing: spouseClaimsBenefits ? ctx.housing : undefined,
+    taxReductionDependants: higherIncome === 'spouse' ? totalDependants : 0,
   };
 
   return {
@@ -757,23 +713,23 @@ function applyPlanTransfers(base: PreparedInputs, plan: OptimizationPlan): Prepa
     taxpayerOverrides.credits = {
       ...(taxpayerOverrides.credits ?? {}),
       disabilityTransferOutFederalBase: plan.disabilityTransferFederalBase,
-      disabilityTransferOutOntarioBase: plan.disabilityTransferOntarioBase,
+      disabilityTransferOutProvincialBase: plan.disabilityTransferProvincialBase,
     };
     spouseOverrides.credits = {
       ...(spouseOverrides.credits ?? {}),
       disabilityTransferInFederalBase: plan.disabilityTransferFederalBase,
-      disabilityTransferInOntarioBase: plan.disabilityTransferOntarioBase,
+      disabilityTransferInProvincialBase: plan.disabilityTransferProvincialBase,
     };
   } else if (plan.disabilityTransferFrom === 'spouse') {
     spouseOverrides.credits = {
       ...(spouseOverrides.credits ?? {}),
       disabilityTransferOutFederalBase: plan.disabilityTransferFederalBase,
-      disabilityTransferOutOntarioBase: plan.disabilityTransferOntarioBase,
+      disabilityTransferOutProvincialBase: plan.disabilityTransferProvincialBase,
     };
     taxpayerOverrides.credits = {
       ...(taxpayerOverrides.credits ?? {}),
       disabilityTransferInFederalBase: plan.disabilityTransferFederalBase,
-      disabilityTransferInOntarioBase: plan.disabilityTransferOntarioBase,
+      disabilityTransferInProvincialBase: plan.disabilityTransferProvincialBase,
     };
   }
 
@@ -787,9 +743,26 @@ function applyPlanTransfers(base: PreparedInputs, plan: OptimizationPlan): Prepa
 
 function cloneOverrides(overrides: CalculationOverrides): CalculationOverrides {
   return {
+    ...overrides,
     benefits: overrides.benefits ? { ...overrides.benefits } : undefined,
     credits: overrides.credits ? { ...overrides.credits } : undefined,
   };
+}
+
+/** Net income before child care expenses, used to decide which spouse must claim them. */
+function netIncomeBeforeChildCare(octx: OptimizationContext, person: PersonInput): number {
+  const ctx = buildUserContext(octx, person);
+  return estimateNetIncome({ ...ctx, deductions: { ...ctx.deductions, childCareExpenses: 0 } });
+}
+
+function lowerNetIncomeSpouse(ctx: OptimizationContext): 'taxpayer' | 'spouse' {
+  const t = netIncomeBeforeChildCare(ctx, ctx.taxpayerBase);
+  const s = netIncomeBeforeChildCare(ctx, ctx.spouseBase);
+  return s < t ? 'spouse' : 'taxpayer';
+}
+
+function higherNetIncomeSpouse(ctx: OptimizationContext): 'taxpayer' | 'spouse' {
+  return lowerNetIncomeSpouse(ctx) === 'taxpayer' ? 'spouse' : 'taxpayer';
 }
 
 function constrainTransfersToUnused(
@@ -802,13 +775,13 @@ function constrainTransfersToUnused(
   const adjusted: OptimizationPlan = {
     ...plan,
     disabilityTransferFederalBase: round2(plan.disabilityTransferFederalBase),
-    disabilityTransferOntarioBase: round2(plan.disabilityTransferOntarioBase),
+    disabilityTransferProvincialBase: round2(plan.disabilityTransferProvincialBase),
     tuitionTransferFromTaxpayer: round2(plan.tuitionTransferFromTaxpayer),
     tuitionTransferFromSpouse: round2(plan.tuitionTransferFromSpouse),
   };
 
-  const taxpayerCaps = computeTransferBaseCaps(prepared.taxpayer, taxpayerResult);
-  const spouseCaps = computeTransferBaseCaps(prepared.spouse, spouseResult);
+  const taxpayerCaps = computeTransferBaseCaps(ctx, prepared.taxpayer, taxpayerResult);
+  const spouseCaps = computeTransferBaseCaps(ctx, prepared.spouse, spouseResult);
 
   const requestedTuitionNet = adjusted.tuitionTransferFromSpouse - adjusted.tuitionTransferFromTaxpayer;
   if (requestedTuitionNet > 0) {
@@ -828,50 +801,50 @@ function constrainTransfersToUnused(
     adjusted.disabilityTransferFederalBase = round2(
       Math.min(adjusted.disabilityTransferFederalBase, taxpayerCaps.disabilityFederal)
     );
-    adjusted.disabilityTransferOntarioBase = round2(
-      Math.min(adjusted.disabilityTransferOntarioBase, taxpayerCaps.disabilityOntario)
+    adjusted.disabilityTransferProvincialBase = round2(
+      Math.min(adjusted.disabilityTransferProvincialBase, taxpayerCaps.disabilityProvincial)
     );
   } else if (adjusted.disabilityTransferFrom === 'spouse') {
     adjusted.disabilityTransferFederalBase = round2(
       Math.min(adjusted.disabilityTransferFederalBase, spouseCaps.disabilityFederal)
     );
-    adjusted.disabilityTransferOntarioBase = round2(
-      Math.min(adjusted.disabilityTransferOntarioBase, spouseCaps.disabilityOntario)
+    adjusted.disabilityTransferProvincialBase = round2(
+      Math.min(adjusted.disabilityTransferProvincialBase, spouseCaps.disabilityProvincial)
     );
   } else {
     adjusted.disabilityTransferFederalBase = 0;
-    adjusted.disabilityTransferOntarioBase = 0;
+    adjusted.disabilityTransferProvincialBase = 0;
   }
 
-  if (adjusted.disabilityTransferFederalBase <= 0 && adjusted.disabilityTransferOntarioBase <= 0) {
+  if (adjusted.disabilityTransferFederalBase <= 0 && adjusted.disabilityTransferProvincialBase <= 0) {
     adjusted.disabilityTransferFrom = null;
     adjusted.disabilityTransferFederalBase = 0;
-    adjusted.disabilityTransferOntarioBase = 0;
+    adjusted.disabilityTransferProvincialBase = 0;
   }
 
   return adjusted;
 }
 
-function computeTransferBaseCaps(person: PersonInput, result: ReturnResult): TransferBaseCaps {
+function computeTransferBaseCaps(ctx: OptimizationContext, person: PersonInput, result: ReturnResult): TransferBaseCaps {
   const federalSplit = splitTransferCredits(result.federal);
-  const ontarioSplit = splitTransferCredits(result.ontario);
+  const provincialSplit = splitTransferCredits(result.provincial);
 
-  const federalUnused = computeUnusedTransferBases(result.federal, federalSplit, taxConfig.federal.lowestRate);
-  const ontarioUnused = computeUnusedTransferBases(result.ontario, ontarioSplit, taxConfig.ontario.lowestRate);
+  const federalUnused = computeUnusedTransferBases(result.federal, federalSplit, ctx.cfg.federal.lowestRate);
+  const provincialUnused = computeUnusedTransferBases(result.provincial, provincialSplit, ctx.prov.lowestRate);
 
   const tuitionCaps = [person.credits.tuitionFees, federalUnused.tuitionBase];
-  // Ontario transfer of tuition credits only applies if an Ontario tuition credit exists in the model.
-  if (ontarioSplit.tuition > 0) tuitionCaps.push(ontarioUnused.tuitionBase);
+  // A provincial tuition transfer only applies if a provincial tuition credit exists in the model.
+  if (provincialSplit.tuition > 0) tuitionCaps.push(provincialUnused.tuitionBase);
   const tuition = round2(Math.max(0, Math.min(...tuitionCaps)));
 
   const disabilityFederal = person.credits.hasDisabilityDTC
-    ? round2(Math.max(0, Math.min(taxConfig.federal.disabilityAmount, federalUnused.disabilityBase)))
+    ? round2(Math.max(0, Math.min(ctx.cfg.federal.disabilityAmount, federalUnused.disabilityBase)))
     : 0;
-  const disabilityOntario = person.credits.hasDisabilityDTC
-    ? round2(Math.max(0, Math.min(taxConfig.ontario.disabilityAmount, ontarioUnused.disabilityBase)))
+  const disabilityProvincial = person.credits.hasDisabilityDTC
+    ? round2(Math.max(0, Math.min(ctx.prov.disabilityAmount, provincialUnused.disabilityBase)))
     : 0;
 
-  return { tuition, disabilityFederal, disabilityOntario };
+  return { tuition, disabilityFederal, disabilityProvincial };
 }
 
 function computeUnusedTransferBases(
@@ -920,12 +893,12 @@ function normalizePlan(plan: OptimizationPlan, ctx: OptimizationContext): Optimi
 
   let disabilityTransferFrom: Claimant = plan.disabilityTransferFrom;
   let disabilityTransferFederalBase = round2(Math.max(0, plan.disabilityTransferFederalBase));
-  let disabilityTransferOntarioBase = round2(Math.max(0, plan.disabilityTransferOntarioBase));
+  let disabilityTransferProvincialBase = round2(Math.max(0, plan.disabilityTransferProvincialBase));
 
-  if (disabilityTransferFederalBase <= 0 && disabilityTransferOntarioBase <= 0) {
+  if (disabilityTransferFederalBase <= 0 && disabilityTransferProvincialBase <= 0) {
     disabilityTransferFrom = null;
     disabilityTransferFederalBase = 0;
-    disabilityTransferOntarioBase = 0;
+    disabilityTransferProvincialBase = 0;
   }
 
   return {
@@ -936,7 +909,7 @@ function normalizePlan(plan: OptimizationPlan, ctx: OptimizationContext): Optimi
     personalAmountClaimant: plan.personalAmountClaimant,
     disabilityTransferFrom,
     disabilityTransferFederalBase,
-    disabilityTransferOntarioBase,
+    disabilityTransferProvincialBase,
     tuitionTransferFromTaxpayer,
     tuitionTransferFromSpouse,
   };
@@ -963,7 +936,7 @@ function planComplexity(plan: OptimizationPlan): number {
     claimantCount * 0.01 +
     Math.abs(plan.tuitionTransferFromSpouse - plan.tuitionTransferFromTaxpayer) +
     plan.disabilityTransferFederalBase +
-    plan.disabilityTransferOntarioBase
+    plan.disabilityTransferProvincialBase
   );
 }
 
@@ -976,7 +949,7 @@ function planKey(plan: OptimizationPlan): string {
     plan.personalAmountClaimant ?? 'null',
     plan.disabilityTransferFrom ?? 'null',
     plan.disabilityTransferFederalBase.toFixed(2),
-    plan.disabilityTransferOntarioBase.toFixed(2),
+    plan.disabilityTransferProvincialBase.toFixed(2),
     plan.tuitionTransferFromTaxpayer.toFixed(2),
     plan.tuitionTransferFromSpouse.toFixed(2),
   ].join('|');
@@ -1021,19 +994,8 @@ function clonePerson(person: PersonInput): PersonInput {
   };
 }
 
-function buildUserContext(person: PersonInput, maritalStatus: HouseholdSettings['maritalStatus']): UserContext {
-  return {
-    age: person.age,
-    maritalStatus,
-    spouseNetIncome: 0,
-    income: person.income,
-    deductions: {
-      ...person.deductions,
-      fhsaContributions: person.deductions.fhsaContributions ?? 0,
-    },
-    credits: person.credits,
-    benefits: person.benefits,
-  };
+function buildUserContext(ctx: OptimizationContext, person: PersonInput): UserContext {
+  return buildContext(person, ctx.maritalStatus, 0, { year: ctx.year });
 }
 
 function round2(n: number): number {

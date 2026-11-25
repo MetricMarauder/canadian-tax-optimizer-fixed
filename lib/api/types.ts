@@ -1,7 +1,11 @@
-export type Province = 'Ontario';
+import type { ProvinceCode } from '@/lib/tax/config';
+
+/** Two-letter province/territory code (e.g. 'ON', 'BC', 'QC'). */
+export type Province = ProvinceCode;
 
 export type MaritalStatus = 'single' | 'married' | 'commonlaw';
 
+/** Jurisdiction of a catalog row (the Excel catalog covers Federal + Ontario). */
 export type Jurisdiction = 'Federal' | 'Ontario';
 
 export type PersonIncome = {
@@ -46,6 +50,8 @@ export type PersonInput = {
 };
 
 export type IndividualRequest = {
+  year?: number;
+  housing?: { rentPaid: number; propertyTaxPaid: number; northernOntario: boolean };
   province: Province;
   age: number;
   maritalStatus: MaritalStatus;
@@ -69,9 +75,17 @@ export type HouseholdSettings = {
    * For now this is informational / placeholder.
    */
   tuitionTransferAmount?: number;
+  /** Rent paid for the household's principal residence (OEPTC, B.C. renter's credit, Manitoba renters credit). */
+  rentPaid?: number;
+  /** Property tax paid for the household's principal residence (OEPTC). */
+  propertyTaxPaid?: number;
+  /** Lived in Northern Ontario on December 31 (Northern Ontario energy credit). */
+  northernOntario?: boolean;
 };
 
 export type CalculateRequest = {
+  /** Tax year (defaults to 2025). */
+  year?: number;
   province: Province;
   household: HouseholdSettings;
   taxpayer: PersonInput;
@@ -83,7 +97,8 @@ export type AppliedItem = {
   name: string;
   amount: number;
   lineForm?: string;
-  jurisdiction: Jurisdiction;
+  /** 'Federal' or the province/territory name. */
+  jurisdiction: string;
   mechanism?: string;
   prong?: 'A' | 'B' | 'C';
 };
@@ -93,7 +108,30 @@ export type JurisdictionBreakdown = {
   taxBeforeCredits: number;
   nonRefundableCreditsTotal: number;
   creditsApplied: AppliedItem[];
+  /**
+   * Final tax for the jurisdiction. For Ontario this includes the surtax and Ontario Health
+   * Premium and is net of the Ontario tax reduction.
+   */
   taxAfterCredits: number;
+  /** Dividend tax credit (included in creditsApplied / nonRefundableCreditsTotal). */
+  dividendTaxCredit?: number;
+  /** Provincial only: surtax (Ontario). */
+  surtax?: number;
+  /** Provincial only: low-income tax reduction (e.g. ON428 line 80, BC tax reduction). */
+  taxReduction?: number;
+  /** Provincial only: Ontario LIFT credit. */
+  lift?: number;
+  /** Provincial only: health premium (Ontario). */
+  healthPremium?: number;
+  /** Federal only: Quebec abatement (16.5% of basic federal tax). */
+  quebecAbatement?: number;
+};
+
+export type ProvincialBreakdown = JurisdictionBreakdown & {
+  province: Province;
+  name: string;
+  /** Limitations/estimates that apply to this province's calculation. */
+  notes: string[];
 };
 
 export type TaxBreakdown = JurisdictionBreakdown;
@@ -112,15 +150,30 @@ export type ExplanationRow = {
 
 export type ExplanationItem = ExplanationRow;
 
+export type PayrollSummary = {
+  /** CPP, or QPP for Quebec residents. */
+  cppContributions: number;
+  cppEnhancedDeduction: number;
+  eiPremiums: number;
+  /** Quebec parental insurance plan premiums (Quebec only). */
+  qpipPremiums: number;
+};
+
 export type ReturnResult = {
+  /** Refund (+) or balance owing (−) on the return itself. Excludes benefits paid separately. */
   refundOrOwing: number;
   taxesWithheld: number;
   taxPayableTotal: number;
   refundableCreditsAndBenefitsTotal: number;
   deductionsApplied: AppliedItem[];
   refundableCreditsAndBenefitsApplied: AppliedItem[];
+  /** Estimated benefits paid separately after assessment (GST/HST credit, OSTC). */
+  benefitsPaidSeparatelyTotal: number;
+  benefitsPaidSeparately: AppliedItem[];
+  /** Employee CPP/EI estimated from employment income. */
+  payroll: PayrollSummary;
   federal: JurisdictionBreakdown;
-  ontario: JurisdictionBreakdown;
+  provincial: ProvincialBreakdown;
   explanation: ExplanationRow[];
 };
 
@@ -130,25 +183,28 @@ export type CalculateResponse = {
     taxesWithheldTotal: number;
     taxPayableTotal: number;
     refundableCreditsAndBenefitsTotal: number;
+    benefitsPaidSeparatelyTotal: number;
   };
+  year: number;
+  province: Province;
   taxpayer: ReturnResult;
   spouse?: ReturnResult;
   transferSummary?: {
     tuitionTransferAmount: number;
     tuitionFederalCreditTransferred: number;
-    tuitionOntarioCreditTransferred: number;
+    tuitionProvincialCreditTransferred: number;
     tuitionTransferFromTaxpayer: number;
     tuitionTransferFromSpouse: number;
     tuitionNetTo: 'taxpayer' | 'spouse' | null;
     tuitionNetAmount: number;
     personalAmountClaimant: 'taxpayer' | 'spouse' | null;
     personalAmountFederalCredit: number;
-    personalAmountOntarioCredit: number;
+    personalAmountProvincialCredit: number;
     donationsClaimant: 'taxpayer' | 'spouse' | null;
     childCareClaimant: 'taxpayer' | 'spouse' | null;
     disabilityTransferFrom: 'taxpayer' | 'spouse' | null;
     disabilityTransferFederalBase: number;
-    disabilityTransferOntarioBase: number;
+    disabilityTransferProvincialBase: number;
     benefitClaimant: 'taxpayer' | 'spouse' | null;
     cwbClaimant: 'taxpayer' | 'spouse' | null;
   };

@@ -1,61 +1,31 @@
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
-import type { CalculateRequest, CalculateResponse } from '@/lib/api/types';
+import { ZodError } from 'zod';
+import type { CalculateResponse } from '@/lib/api/types';
+import { CalculateRequestSchema } from '@/lib/api/schema';
 import { calculateOptimizedHousehold } from '@/lib/tax/household';
 
-// Basic runtime validation (expand later)
-const PersonSchema = z.object({
-  age: z.number().int().min(0),
-  province: z.literal('Ontario'),
-  income: z.object({
-    employment: z.number().min(0),
-    other: z.number().min(0),
-    capitalGains: z.number().min(0),
-    eligibleDividends: z.number().min(0),
-  }),
-  deductions: z.object({
-    rrspContributions: z.number().min(0),
-    rrspDeductionLimit: z.number().min(0),
-    fhsaContributions: z.number().min(0).optional(),
-    rppContributions: z.number().min(0),
-    unionDues: z.number().min(0),
-    childCareExpenses: z.number().min(0),
-    numChildrenUnder7: z.number().min(0),
-    numChildren7to16: z.number().min(0),
-    numChildrenDTCEligible: z.number().min(0),
-  }),
-  credits: z.object({
-    hasDisabilityDTC: z.boolean(),
-    donations: z.number().min(0),
-    tuitionFees: z.number().min(0),
-  }),
-  benefits: z.object({
-    cwbEligible: z.boolean(),
-    cwbDisabilityEligible: z.boolean(),
-    includeBenefitsEstimates: z.boolean(),
-  }),
-  taxesWithheld: z.number().min(0),
-});
-
-const ReqSchema = z.object({
-  province: z.literal('Ontario'),
-  household: z.object({
-    maritalStatus: z.enum(['single', 'married', 'commonlaw']),
-    claimant: z.enum(['taxpayer', 'spouse']),
-    tuitionTransferAmount: z.number().min(0).optional(),
-  }),
-  taxpayer: PersonSchema,
-  spouse: PersonSchema.optional(),
-});
-
 export async function POST(req: Request) {
+  let json: unknown;
   try {
-    const json = (await req.json()) as CalculateRequest;
-    const parsed = ReqSchema.parse(json);
-    const out: CalculateResponse = calculateOptimizedHousehold(parsed);
+    json = await req.json();
+  } catch {
+    return new NextResponse('Request body must be valid JSON.', { status: 400 });
+  }
 
+  try {
+    const parsed = CalculateRequestSchema.parse(json);
+    // The household's province applies to both returns (residence on December 31).
+    const out: CalculateResponse = calculateOptimizedHousehold({
+      ...parsed,
+      taxpayer: { ...parsed.taxpayer, province: parsed.province },
+      spouse: parsed.spouse ? { ...parsed.spouse, province: parsed.province } : undefined,
+    });
     return NextResponse.json(out);
   } catch (e: any) {
-    return new NextResponse(e?.message ?? 'Bad Request', { status: 400 });
+    if (e instanceof ZodError) {
+      return NextResponse.json({ error: 'Invalid request', issues: e.issues }, { status: 400 });
+    }
+    console.error(e);
+    return new NextResponse('Internal error while calculating.', { status: 500 });
   }
 }

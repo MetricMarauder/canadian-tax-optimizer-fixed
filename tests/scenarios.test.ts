@@ -41,7 +41,7 @@ function mk(id: string, name: string, jurisdiction: 'Federal' | 'Ontario', mecha
 describe('seed scenarios (deterministic expected outputs)', () => {
   it('Scenario A: low income single, eligible CWB', () => {
     const req: IndividualRequest = {
-      province: 'Ontario',
+      province: 'ON',
       age: 25,
       maritalStatus: 'single',
       income: { employment: 20000, other: 0, capitalGains: 0, eligibleDividends: 0 },
@@ -60,13 +60,20 @@ describe('seed scenarios (deterministic expected outputs)', () => {
       taxesWithheld: 1500
     };
     const res = calculateFromItems(req, items);
-    expect(res.refundOrOwing).toBeCloseTo(3318.99, 2);
-    expect(res.taxPayableTotal).toBeCloseTo(714.27, 2);
+    // Values cross-checked against an independent re-implementation (within $0.01 rounding).
+    // Ontario tax of $12.28 is eliminated by the LIFT credit.
+    expect(res.refundOrOwing).toBeCloseTo(2974.92, 2);
+    expect(res.taxPayableTotal).toBeCloseTo(158.08, 2);
+    expect(res.provincial.lift).toBeCloseTo(12.28, 2);
+    // CWB is on the return; the GST/HST credit (CGEB, (356 + 165.42) × 1.25 = 651.78) and OSTC (378)
+    // are paid separately and are not in the refund.
+    expect(res.refundableCreditsAndBenefitsTotal).toBeCloseTo(1633.0, 2);
+    expect(res.benefitsPaidSeparatelyTotal).toBeCloseTo(1029.78, 2);
   });
 
   it('Scenario B: mid income single with RRSP + donations', () => {
     const req: IndividualRequest = {
-      province: 'Ontario',
+      province: 'ON',
       age: 35,
       maritalStatus: 'single',
       income: { employment: 90000, other: 1000, capitalGains: 5000, eligibleDividends: 0 },
@@ -85,13 +92,14 @@ describe('seed scenarios (deterministic expected outputs)', () => {
       taxesWithheld: 22000
     };
     const res = calculateFromItems(req, items);
-    expect(res.refundOrOwing).toBeCloseTo(6667.67, 2);
-    expect(res.taxPayableTotal).toBeCloseTo(15332.33, 2);
+    expect(res.refundOrOwing).toBeCloseTo(7161.9, 2);
+    expect(res.taxPayableTotal).toBeCloseTo(14838.1, 2);
+    expect(res.provincial.healthPremium).toBeCloseTo(750, 2);
   });
 
   it('Scenario C: family with child care, uses Ontario CARE', () => {
     const req: IndividualRequest = {
-      province: 'Ontario',
+      province: 'ON',
       age: 32,
       maritalStatus: 'married',
       spouseNetIncome: 25000,
@@ -111,7 +119,9 @@ describe('seed scenarios (deterministic expected outputs)', () => {
       taxesWithheld: 12000
     };
     const res = calculateFromItems(req, items);
-    expect(res.refundOrOwing).toBeCloseTo(9447.23, 2);
+    // LIFT: 875 − 5% × (net income 46,485 − 32,500) ≈ 175.75
+    expect(res.provincial.lift).toBeCloseTo(175.75, 1);
+    expect(res.refundOrOwing).toBeCloseTo(10094.9, 2);
     expect(res.refundableCreditsAndBenefitsTotal).toBeCloseTo(3440.0, 2);
   });
 });

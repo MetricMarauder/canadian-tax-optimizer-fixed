@@ -1,10 +1,14 @@
+import { getConfig } from '@/lib/tax/config';
 import { describe, it, expect } from 'vitest';
-import { IMPLEMENTED_RULES } from '@/lib/rules/implemented';
-import taxConfig from '@/lib/tax/config/2025.json';
+import { IMPLEMENTED_RULES, estimateNetIncome } from '@/lib/rules/implemented';
+import { getConfig as _gc } from '@/lib/tax/config';
+const taxConfig = _gc(2025);
 import type { UserContext } from '@/lib/rules/types';
 
 function baseCtx(income: number): UserContext {
   return {
+    config: getConfig(2025),
+    province: 'ON',
     age: 25,
     maritalStatus: 'single',
     spouseNetIncome: 0,
@@ -32,7 +36,8 @@ describe('refundable benefit calculation', () => {
     const ctx = baseCtx(income);
     const res = IMPLEMENTED_RULES['canada workers benefit'](ctx);
 
-    const frac = (income - cfg.singlePhaseoutStart) / (cfg.singlePhaseoutEnd - cfg.singlePhaseoutStart);
+    const netIncome = estimateNetIncome(ctx);
+    const frac = (netIncome - cfg.singlePhaseoutStart) / (cfg.singlePhaseoutEnd - cfg.singlePhaseoutStart);
     const expected = Math.round(cfg.singleMax * (1 - frac) * 100) / 100;
 
     expect(res.applied).toBe(true);

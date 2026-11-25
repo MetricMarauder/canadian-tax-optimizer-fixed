@@ -1,4 +1,5 @@
 import type { Jurisdiction } from '@/lib/api/types';
+import type { ProvinceCode, TaxYearConfig } from '@/lib/tax/config';
 
 export type RuleItem = {
   id: string;
@@ -17,9 +18,16 @@ export type RuleItem = {
 };
 
 export type UserContext = {
+  /** Parameters for the selected tax year. */
+  config: TaxYearConfig;
+  province: ProvinceCode;
   age: number;
   maritalStatus: 'single' | 'married' | 'commonlaw';
   spouseNetIncome: number;
+  /** Housing costs for the year, given to the household member who claims household benefits. */
+  housing?: HousingInput;
+  /** Spouse's employment income (for family working-income tests such as CWB, ACFB, QC work premium). */
+  spouseEmploymentIncome?: number;
   income: {
     employment: number;
     other: number;
@@ -43,8 +51,8 @@ export type UserContext = {
     tuitionFees: number;
     disabilityTransferInFederalBase?: number;
     disabilityTransferOutFederalBase?: number;
-    disabilityTransferInOntarioBase?: number;
-    disabilityTransferOutOntarioBase?: number;
+    disabilityTransferInProvincialBase?: number;
+    disabilityTransferOutProvincialBase?: number;
   };
   benefits: {
     cwbEligible: boolean;
@@ -53,10 +61,19 @@ export type UserContext = {
     cwbClaimBasic?: boolean;
     cwbClaimDisability?: boolean;
     cwbDisabilityBothEligible?: boolean;
-    claimGstHstCredit?: boolean;
-    claimOstc?: boolean;
+    /** Household benefits paid separately (CGEB, CCB, provincial benefits) are claimed by one spouse. */
+    claimHouseholdBenefits?: boolean;
     claimCareCredit?: boolean;
   };
+};
+
+export type HousingInput = {
+  /** Rent paid for the principal residence during the year. */
+  rentPaid: number;
+  /** Property tax paid for the principal residence during the year. */
+  propertyTaxPaid: number;
+  /** Lived in Northern Ontario on December 31 (Northern Ontario energy credit). */
+  northernOntario: boolean;
 };
 
 export type RuleResult = {
