@@ -62,6 +62,9 @@ type HouseholdForm = {
   hasSpouse: boolean;
   claimant: 'taxpayer' | 'spouse';
   tuitionTransferAmount: string;
+  rentPaid: string;
+  propertyTaxPaid: string;
+  northernOntario: boolean;
 };
 
 const defaultPerson = (): PersonForm => ({
@@ -287,6 +290,7 @@ function Breakdown({
     taxAfterCredits: number;
     surtax?: number;
     taxReduction?: number;
+    lift?: number;
     healthPremium?: number;
     quebecAbatement?: number;
     notes?: string[];
@@ -304,6 +308,9 @@ function Breakdown({
         )}
         {!!data.surtax && (
           <div>Surtax: <span className="font-medium">${data.surtax.toFixed(2)}</span></div>
+        )}
+        {!!data.lift && (
+          <div>Ontario LIFT credit: <span className="font-medium">−${data.lift.toFixed(2)}</span></div>
         )}
         {!!data.taxReduction && (
           <div>Low-income tax reduction: <span className="font-medium">−${data.taxReduction.toFixed(2)}</span></div>
@@ -348,6 +355,9 @@ export default function HomePage() {
     hasSpouse: true,
     claimant: 'taxpayer',
     tuitionTransferAmount: '0',
+    rentPaid: '',
+    propertyTaxPaid: '',
+    northernOntario: false,
   });
 
   const [taxpayer, setTaxpayer] = useState<PersonForm>(() => defaultPerson());
@@ -361,6 +371,9 @@ export default function HomePage() {
         maritalStatus: household.maritalStatus,
         claimant: household.claimant,
         tuitionTransferAmount: toNumber(household.tuitionTransferAmount),
+        rentPaid: toNumber(household.rentPaid),
+        propertyTaxPaid: toNumber(household.propertyTaxPaid),
+        northernOntario: household.northernOntario,
       },
       taxpayer: personToInput(taxpayer, household.province),
     };
@@ -453,6 +466,39 @@ export default function HomePage() {
               onChange={(e) => setHousehold((s) => ({ ...s, hasSpouse: e.target.checked }))}
             />
           </Field>
+
+          <Field label="Rent paid for your home this year (household total)">
+            <input
+              className="w-full rounded-lg border p-2"
+              inputMode="decimal"
+              type="text"
+              placeholder="0"
+              value={household.rentPaid}
+              onChange={(e) => setHousehold((s) => ({ ...s, rentPaid: e.target.value }))}
+            />
+          </Field>
+
+          <Field label="Property tax paid for your home this year">
+            <input
+              className="w-full rounded-lg border p-2"
+              inputMode="decimal"
+              type="text"
+              placeholder="0"
+              value={household.propertyTaxPaid}
+              onChange={(e) => setHousehold((s) => ({ ...s, propertyTaxPaid: e.target.value }))}
+            />
+          </Field>
+
+          {household.province === 'ON' && (
+            <Field label="Lived in Northern Ontario on December 31?">
+              <input
+                type="checkbox"
+                className="h-5 w-5"
+                checked={household.northernOntario}
+                onChange={(e) => setHousehold((s) => ({ ...s, northernOntario: e.target.checked }))}
+              />
+            </Field>
+          )}
 
           <div className="md:col-span-2 text-sm text-gray-600">
             Transfers are auto-optimized (donations, tuition, disability, child care, benefits, CWB).

@@ -66,27 +66,28 @@ If a row has **no mapping**, or is mapped but not implemented, it still appears 
 
 **Deductions** — RRSP (capped by the deduction limit when entered), FHSA, RPP, union dues, child care (per-child limits and 2/3 of earned income; claimed by the lower-income spouse).
 
-**Provincial/territorial (generic engine, `lib/tax/provincial.ts`)** — brackets, basic personal amount (income-tested in Manitoba and Yukon), spouse amount, disability amount, CPP/EI credits, donations (including Alberta's 60% first-$200 rate and BC/Quebec high-income rates), dividend tax credit, Yukon's Canada employment amount, Ontario surtax and Health Premium, and low-income tax reductions (ON, BC, NB, NS, PE, NL).
+**Provincial/territorial (generic engine, `lib/tax/provincial.ts`)** — brackets, basic personal amount (income-tested in Manitoba and Yukon), spouse amount, disability amount, CPP/EI credits, donations (including Alberta's 60% first-$200 rate and BC/Quebec high-income rates), dividend tax credit, Yukon's Canada employment amount, Ontario surtax, Health Premium and LIFT credit, and low-income tax reductions (ON, BC, NB, NS, PE, NL).
 
 **Provincial benefits**
 
 | Province | Benefits modelled |
 |---|---|
-| ON | CARE child care credit (on return), Ontario sales tax credit, Ontario child benefit |
-| BC | B.C. family benefit |
+| ON | CARE child care credit (on return), Ontario Trillium Benefit (sales tax credit, energy and property tax credit, Northern Ontario energy credit), Ontario child benefit |
+| BC | B.C. family benefit, renter's tax credit (on return) |
 | AB | Alberta child and family benefit (base + working components) |
 | SK | Saskatchewan low-income tax credit |
-| NB | NB harmonized sales tax credit |
+| MB | Renters affordability tax credit (on return) |
+| NB | NB harmonized sales tax credit, NB child tax benefit (with working income supplement) |
 | NS | NS affordable living tax credit, NS child benefit |
 | PE | Island essentials benefit, PEI child benefit |
-| NL | NL income supplement, NL child benefit |
-| YT / NT | Yukon child benefit / NWT child benefit |
+| NL | NL income supplement, NL child benefit, NL seniors' benefit |
+| YT / NT / NU | Yukon, NWT and Nunavut child benefits |
 | QC | Solidarity tax credit, work premium (on return), family allowance |
 
 **Quebec** is simplified: Quebec tax uses Quebec brackets, the basic, living-alone and donation credits, the deduction for workers and the dividend credit; QPP/QPIP and the reduced EI rate replace CPP/EI.
 
 ### Known limitations
-Not modelled: self-employment, non-eligible dividends, pension income/splitting, age amount, medical expenses, provincial tuition credits, Ontario LIFT, OEPTC/NOEC, Manitoba family tax benefit, Nunavut child benefit, Yukon low-income family credit, the federal and Alberta "top-up" credits for very large non-refundable claims, AMT, and multiple-employer CPP/EI overpayments. Child age bands are approximate (under 7 is treated as under 6 for the CCB). Each province's `notes` (shown in the UI) list its own estimates and gaps.
+Not modelled: self-employment, non-eligible dividends, pension income/splitting, age amount, medical expenses, provincial tuition credits, the senior version of the OEPTC, the Ontario senior homeowners' grant, Manitoba family tax benefit and child benefit, Yukon low-income family credit, Nova Scotia poverty reduction credit, the federal and Alberta "top-up" credits for very large non-refundable claims, AMT, and multiple-employer CPP/EI overpayments. Child age bands are approximate (under 7 is treated as under 6 for the CCB). Each province's `notes` (shown in the UI) list its own estimates and gaps.
 
 ## Where the numbers come from
 `scripts/generate-config.py` holds every parameter, with notes on anything that is an estimate. Sources: CRA indexation and payroll tables, Finance Canada, Revenu Québec, provincial budgets and finance ministry pages, KPMG and RCGT 2025/2026 tax tables, and CRA benefit pages. `tests/provinces.test.ts` checks the 2026 Ontario, New Brunswick and Quebec parameters against published tax tables. See `docs/UPDATING_TAX_YEARS.md` for the yearly update process.

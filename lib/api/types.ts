@@ -51,6 +51,7 @@ export type PersonInput = {
 
 export type IndividualRequest = {
   year?: number;
+  housing?: { rentPaid: number; propertyTaxPaid: number; northernOntario: boolean };
   province: Province;
   age: number;
   maritalStatus: MaritalStatus;
@@ -74,6 +75,12 @@ export type HouseholdSettings = {
    * For now this is informational / placeholder.
    */
   tuitionTransferAmount?: number;
+  /** Rent paid for the household's principal residence (OEPTC, B.C. renter's credit, Manitoba renters credit). */
+  rentPaid?: number;
+  /** Property tax paid for the household's principal residence (OEPTC). */
+  propertyTaxPaid?: number;
+  /** Lived in Northern Ontario on December 31 (Northern Ontario energy credit). */
+  northernOntario?: boolean;
 };
 
 export type CalculateRequest = {
@@ -112,6 +119,8 @@ export type JurisdictionBreakdown = {
   surtax?: number;
   /** Provincial only: low-income tax reduction (e.g. ON428 line 80, BC tax reduction). */
   taxReduction?: number;
+  /** Provincial only: Ontario LIFT credit. */
+  lift?: number;
   /** Provincial only: health premium (Ontario). */
   healthPremium?: number;
   /** Federal only: Quebec abatement (16.5% of basic federal tax). */

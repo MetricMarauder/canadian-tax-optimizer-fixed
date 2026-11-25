@@ -55,6 +55,7 @@ type Evaluation = {
 
 type OptimizationContext = {
   year: number;
+  housing: UserContext['housing'];
   cfg: TaxYearConfig;
   prov: ProvinceConfig;
   maritalStatus: HouseholdSettings['maritalStatus'];
@@ -122,8 +123,13 @@ export function calculateOptimizedHouseholdFromItems(
   const cfg = getConfig(year);
   const province = req.province;
   const taxpayerInput = { ...req.taxpayer, province };
+  const housing = {
+    rentPaid: req.household.rentPaid ?? 0,
+    propertyTaxPaid: req.household.propertyTaxPaid ?? 0,
+    northernOntario: req.household.northernOntario ?? false,
+  };
   if (!req.spouse || req.household.maritalStatus === 'single') {
-    const taxpayer = calculateTaxFromItems(taxpayerInput, req.household.maritalStatus, 0, items, { year });
+    const taxpayer = calculateTaxFromItems(taxpayerInput, req.household.maritalStatus, 0, items, { year, housing });
     return {
       year,
       province,
@@ -134,6 +140,7 @@ export function calculateOptimizedHouseholdFromItems(
 
   const ctx: OptimizationContext = {
     year,
+    housing,
     cfg,
     prov: getProvince(cfg, province),
     maritalStatus: req.household.maritalStatus,
@@ -660,6 +667,8 @@ function applyPlanBase(plan: OptimizationPlan, ctx: OptimizationContext): Prepar
     credits: {},
     year: ctx.year,
     spouseEmploymentIncome: spouse.income.employment,
+    // Rent/property-tax based credits are claimed once, by the spouse who claims household benefits.
+    housing: taxpayerClaimsBenefits ? ctx.housing : undefined,
     // Provincial low-income tax reduction: dependants are claimed by the higher-income spouse.
     taxReductionDependants: higherIncome === 'taxpayer' ? totalDependants : 0,
   };
@@ -675,6 +684,7 @@ function applyPlanBase(plan: OptimizationPlan, ctx: OptimizationContext): Prepar
     credits: {},
     year: ctx.year,
     spouseEmploymentIncome: taxpayer.income.employment,
+    housing: spouseClaimsBenefits ? ctx.housing : undefined,
     taxReductionDependants: higherIncome === 'spouse' ? totalDependants : 0,
   };
 

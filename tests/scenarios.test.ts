@@ -61,8 +61,10 @@ describe('seed scenarios (deterministic expected outputs)', () => {
     };
     const res = calculateFromItems(req, items);
     // Values cross-checked against an independent re-implementation (within $0.01 rounding).
-    expect(res.refundOrOwing).toBeCloseTo(2962.64, 2);
-    expect(res.taxPayableTotal).toBeCloseTo(170.36, 2);
+    // Ontario tax of $12.28 is eliminated by the LIFT credit.
+    expect(res.refundOrOwing).toBeCloseTo(2974.92, 2);
+    expect(res.taxPayableTotal).toBeCloseTo(158.08, 2);
+    expect(res.provincial.lift).toBeCloseTo(12.28, 2);
     // CWB is on the return; the GST/HST credit (CGEB, (356 + 165.42) × 1.25 = 651.78) and OSTC (378)
     // are paid separately and are not in the refund.
     expect(res.refundableCreditsAndBenefitsTotal).toBeCloseTo(1633.0, 2);
@@ -117,7 +119,9 @@ describe('seed scenarios (deterministic expected outputs)', () => {
       taxesWithheld: 12000
     };
     const res = calculateFromItems(req, items);
-    expect(res.refundOrOwing).toBeCloseTo(9919.15, 2);
+    // LIFT: 875 − 5% × (net income 46,485 − 32,500) ≈ 175.75
+    expect(res.provincial.lift).toBeCloseTo(175.75, 1);
+    expect(res.refundOrOwing).toBeCloseTo(10094.9, 2);
     expect(res.refundableCreditsAndBenefitsTotal).toBeCloseTo(3440.0, 2);
   });
 });

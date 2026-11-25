@@ -24,6 +24,8 @@ export type UserContext = {
   age: number;
   maritalStatus: 'single' | 'married' | 'commonlaw';
   spouseNetIncome: number;
+  /** Housing costs for the year, given to the household member who claims household benefits. */
+  housing?: HousingInput;
   /** Spouse's employment income (for family working-income tests such as CWB, ACFB, QC work premium). */
   spouseEmploymentIncome?: number;
   income: {
@@ -63,6 +65,15 @@ export type UserContext = {
     claimHouseholdBenefits?: boolean;
     claimCareCredit?: boolean;
   };
+};
+
+export type HousingInput = {
+  /** Rent paid for the principal residence during the year. */
+  rentPaid: number;
+  /** Property tax paid for the principal residence during the year. */
+  propertyTaxPaid: number;
+  /** Lived in Northern Ontario on December 31 (Northern Ontario energy credit). */
+  northernOntario: boolean;
 };
 
 export type RuleResult = {

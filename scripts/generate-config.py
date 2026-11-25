@@ -145,6 +145,20 @@ def config_2025():
         {"id": "on_ostc", "name": "Ontario sales tax credit (OTB)", "perPerson": 378,
          "singleThreshold": 29047, "familyThreshold": 36309, "rate": 0.04},
         {"id": "on_ocb", "name": "Ontario child benefit", "perChild": 1760, "threshold": 26865, "rate": 0.08},
+        # Ontario energy and property tax credit (OTB), July 2026–June 2027, non-senior calculation sheets.
+        {"id": "on_oeptc", "name": "Ontario energy and property tax credit (OTB)", "rentShare": 0.20,
+         "energyMax": 290, "propertyRate": 0.10, "propertyCap": 944, "propertyAddOn": 73,
+         "singleThreshold": 29047, "familyThreshold": 36309, "rate": 0.02},
+        # Northern Ontario energy credit (OTB), July 2026–June 2027.
+        {"id": "on_noec", "name": "Northern Ontario energy credit (OTB)", "singleMax": 189, "familyMax": 290,
+         "singleThreshold": 50833, "familyThreshold": 65356, "rate": 0.01},
+    ]
+    # Low-income Individuals and Families Tax (LIFT) credit, ON428-A.
+    on["lift"] = {"max": 875, "employmentRate": 0.0505, "individualThreshold": 32500, "familyThreshold": 65000,
+                  "rate": 0.05}
+    on["notes"] = [
+        "OEPTC uses the non-senior calculation; the senior version (higher maximum, age 64+) is not modelled.",
+        "OEPTC single-person threshold is assumed equal to the OSTC single threshold ($29,047).",
     ]
     provinces["ON"] = on
 
@@ -155,6 +169,8 @@ def config_2025():
     bc["benefits"] = [
         {"id": "bc_family", "name": "B.C. family benefit", "amounts": [1750, 1100, 900], "minimums": [775, 750, 725],
          "threshold": 30176, "secondThreshold": 96562, "rate": 0.04},
+        {"id": "bc_renter", "name": "B.C. renter's tax credit", "onReturn": True, "household": True, "max": 400,
+         "threshold": 64764, "rate": 0.02},
     ]
     provinces["BC"] = bc
 
@@ -183,7 +199,14 @@ def config_2025():
     mb = province("Manitoba", 0.108, [47000, 100000], [0.108, 0.1275, 0.174],
                   {"base": 15780, "min": 0, "phaseoutStart": 200000, "phaseoutEnd": 400000},
                   9134, 0, 6180, 0.108, 0.174, 0.08)
-    mb["notes"] = ["Manitoba family tax benefit and Manitoba child benefit are not modelled."]
+    mb["benefits"] = [
+        {"id": "mb_ratc", "name": "Manitoba renters affordability tax credit", "onReturn": True, "household": True,
+         "max": 575, "rentShare": 0.20},
+    ]
+    mb["notes"] = [
+        "Manitoba family tax benefit, Manitoba child benefit and the renters seniors' top-up are not modelled.",
+        "The homeowners affordability tax credit is applied on the property tax bill, so it is not part of the return.",
+    ]
     provinces["MB"] = mb
 
     nb = province("New Brunswick", 0.094, [51306, 102614, 190060], [0.094, 0.14, 0.16, 0.195], bpa_flat(13396),
@@ -193,10 +216,12 @@ def config_2025():
     nb["benefits"] = [
         {"id": "nb_hstc", "name": "New Brunswick harmonized sales tax credit", "adult": 300, "spouse": 300,
          "perChild": 100, "threshold": 35000, "rate": 0.02},
+        {"id": "nb_ctb", "name": "New Brunswick child tax benefit", "perChild": 250, "threshold": 20000,
+         "rateOneChild": 0.025, "rateMoreChildren": 0.05,
+         "wisMax": 250, "wisPhaseInBase": 3750, "wisPhaseInRate": 0.04, "wisFrom": 20921, "wisTo": 25921},
     ]
     nb["notes"] = [
         "Low-income tax reduction amount/threshold are estimates (2024 values indexed; 2025 family maximum $1,604).",
-        "New Brunswick child tax benefit is not modelled.",
     ]
     provinces["NB"] = nb
 
@@ -236,10 +261,13 @@ def config_2025():
          "phaseInBase": 15000, "phaseInRate": 0.0532, "spouse": 69, "perChild": 231, "threshold": 40000, "rate": 0.09},
         {"id": "nl_cb", "name": "Newfoundland and Labrador child benefit", "amounts": [1888, 2002, 2150, 2310],
          "fullBelow": 20397, "zeroAt": 38193},
+        {"id": "nl_seniors", "name": "Newfoundland and Labrador seniors' benefit", "max": 1882, "minimumAge": 64,
+         "threshold": 30409, "rate": 0.1166},
     ]
     nl["notes"] = [
         "NL income supplement uses 2025 benefit-year amounts; its phase-out rate (9%) is an estimate.",
         "NL child benefit modelled as a linear phase-out between $20,397 and $38,193 (estimate).",
+        "NL seniors' benefit phase-out rate (11.66%) is an estimate.",
     ]
     provinces["NL"] = nl
 
@@ -267,7 +295,12 @@ def config_2025():
 
     nu = province("Nunavut", 0.04, [54707, 109413, 177881], [0.04, 0.07, 0.09, 0.115], bpa_flat(19274), 19274, 0,
                   16405, 0.04, 0.115, 0.0551)
-    nu["notes"] = ["Nunavut child benefit is not modelled (published amounts conflict)."]
+    nu["benefits"] = [
+        {"id": "nu_cb", "name": "Nunavut child benefit", "perChild": 696, "threshold": 22065,
+         "rateOneChild": 0.025, "rateMoreChildren": 0.05,
+         "workerOneChild": 290, "workerMoreChildren": 369, "workerIncomeBase": 3955},
+    ]
+    nu["notes"] = ["Nunavut child benefit uses the doubled 2026 amount ($696/child); its reduction rates (2.5%/5%) are estimates."]
     provinces["NU"] = nu
 
     qc = province("Quebec", 0.14, [53255, 106495, 129590], [0.14, 0.19, 0.24, 0.2575], bpa_flat(18571), 0, 0, 0,
@@ -359,7 +392,11 @@ def config_2026():
     on["taxReduction"] = {"type": "ontario", "basic": 300, "perDependant": 554}
     on["benefits"][1].update({"perPerson": 385, "singleThreshold": 29599, "familyThreshold": 36999})
     on["benefits"][2].update({"perChild": 1793, "threshold": 27375})
-    on["notes"] = ["OSTC and Ontario child benefit for July 2027 " + est, "CARE table assumed unchanged for 2026."]
+    on["benefits"][3].update({"energyMax": 296, "propertyCap": 962, "propertyAddOn": 74,
+                              "singleThreshold": 29599, "familyThreshold": 36999})
+    on["benefits"][4].update({"singleMax": 193, "familyMax": 296, "singleThreshold": 51799, "familyThreshold": 66598})
+    on["notes"] = on["notes"] + ["OSTC, Ontario child benefit, OEPTC and NOEC for July 2027 " + est,
+                                 "CARE table assumed unchanged for 2026."]
 
     bc = p["BC"]
     bc["brackets"] = brackets([50363, 100728, 115648, 140430, 190405, 265545],
@@ -371,7 +408,9 @@ def config_2026():
     bc["donationCredit"] = {"first200Rate": 0.056, "over200Rate": 0.168, "topRate": 0.205,
                             "topRateIncomeThreshold": 265545}
     bc["taxReduction"] = {"type": "linear", "basic": 690, "threshold": 25570, "rate": 0.0356, "incomeBasis": "individual"}
-    bc["notes"] = ["B.C. family benefit for July 2027 assumed unchanged (estimate)."]
+    bc["benefits"][1].update({"threshold": 66189})
+    bc["notes"] = ["B.C. family benefit for July 2027 assumed unchanged (estimate).",
+                   "B.C. renter's tax credit 2026 threshold is an estimate (2025 × 1.022)."]
 
     ab = p["AB"]
     ab["brackets"] = brackets([61200, 154259, 185111, 246813, 370220], [0.08, 0.10, 0.12, 0.13, 0.14, 0.15])
@@ -387,6 +426,7 @@ def config_2026():
     sk["disabilityAmount"] = 14266
     sk["notes"] = ["Saskatchewan low-income tax credit for July 2027 assumed unchanged (estimate)."]
 
+    p["MB"]["benefits"][0]["max"] = 625
     nb = p["NB"]
     nb["brackets"] = brackets([52333, 104666, 193861], [0.094, 0.14, 0.16, 0.195])
     nb["basicPersonalAmount"] = bpa_flat(13664)

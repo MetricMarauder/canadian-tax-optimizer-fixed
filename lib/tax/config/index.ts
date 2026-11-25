@@ -47,7 +47,11 @@ export type TaxReductionConfig =
     };
 
 /** Benefit parameters vary by program; each program's calculator documents its own shape. */
-export type BenefitConfig = { id: string; name: string; onReturn?: boolean; [key: string]: any };
+/**
+ * `onReturn`: refundable credit claimed on the return (otherwise paid separately after assessment).
+ * `household`: claimed once per household (by the spouse who claims household benefits).
+ */
+export type BenefitConfig = { id: string; name: string; onReturn?: boolean; household?: boolean; [key: string]: any };
 
 export type QuebecConfig = {
   livingAloneAmount: number;
@@ -98,6 +102,8 @@ export type ProvinceConfig = {
   surtax?: { threshold: number; rate: number }[];
   healthPremium?: { from: number; rate: number; base: number; max: number }[];
   taxReduction?: TaxReductionConfig;
+  /** Ontario Low-income Individuals and Families Tax (LIFT) credit. */
+  lift?: { max: number; employmentRate: number; individualThreshold: number; familyThreshold: number; rate: number };
   benefits: BenefitConfig[];
   notes: string[];
   quebec?: QuebecConfig;

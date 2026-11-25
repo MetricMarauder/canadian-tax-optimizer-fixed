@@ -23,6 +23,8 @@ export type CalculationOverrides = {
   year?: number;
   /** Spouse's employment income, for family working-income tests. */
   spouseEmploymentIncome?: number;
+  /** Household housing costs (given to the spouse who claims household benefits). */
+  housing?: UserContext['housing'];
   credits?: Pick<
     UserContext['credits'],
     | 'disabilityTransferInFederalBase'
@@ -62,7 +64,10 @@ export function calculateFromItems(req: IndividualRequest, items: RuleItem[]): R
     taxesWithheld: req.taxesWithheld,
   };
 
-  return calculateTaxFromItems(person, req.maritalStatus, req.spouseNetIncome ?? 0, items, { year: req.year });
+  return calculateTaxFromItems(person, req.maritalStatus, req.spouseNetIncome ?? 0, items, {
+    year: req.year,
+    housing: req.housing,
+  });
 }
 
 export function calculateTax(
@@ -88,6 +93,7 @@ export function buildContext(
     maritalStatus,
     spouseNetIncome,
     spouseEmploymentIncome: overrides?.spouseEmploymentIncome,
+    housing: overrides?.housing,
     income: person.income,
     deductions: {
       ...person.deductions,
@@ -226,6 +232,7 @@ export function calculateTaxFromItems(
       dividendTaxCredit: provincial.dividendTaxCredit,
       surtax: provincial.surtax,
       taxReduction: provincial.taxReduction,
+      lift: provincial.lift,
       healthPremium: provincial.healthPremium,
     },
     deductionsApplied,

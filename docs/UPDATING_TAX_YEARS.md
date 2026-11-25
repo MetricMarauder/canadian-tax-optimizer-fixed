@@ -14,7 +14,8 @@ the provinces publish them (normally November 2026 to January 2027):
 | CWB 2026 amounts | 2025 × 1.02 | CRA "Canada workers benefit" 2026 amounts |
 | CGEB (GST/HST credit) July 2027–June 2028 | 2026 amounts × 1.02 | CRA indexation table (Nov/Dec 2026) |
 | CCB July 2027–June 2028 | July 2026 × 1.02 | CRA CCB page / indexation table |
-| Provincial benefits from July 2027 (OSTC, OCB, BCFB, ACFB, SLITC, NBHSTC, NSALTC, NSCB, PEI, NL, YT, NT) | July 2026 amounts (ON indexed 1.9%) | CRA provincial programs pages |
+| Provincial benefits from July 2027 (OSTC, OEPTC, NOEC, OCB, BCFB, ACFB, SLITC, NBHSTC, NBCTB, NSALTC, NSCB, PEI, NL, YT, NT, NU) | July 2026 amounts (ON indexed 1.9%) | CRA provincial programs pages and OEPTC/NOEC calculation sheets |
+| B.C. renter's tax credit 2026 threshold | 2025 × 1.022 | gov.bc.ca renter's tax credit page |
 | Quebec solidarity (July 2027) and family allowance (2027) | indexed ~2% | Quebec "Parameters of the personal income tax system for 2027" |
 | NB, NS, NL low-income tax reductions 2026 | indexed / carried forward | NB428, NS428, NL428 2026 forms |
 | Ontario CARE table 2026 | 2025 table | ON479-A 2026 |

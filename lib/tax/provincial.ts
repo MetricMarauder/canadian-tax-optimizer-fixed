@@ -50,6 +50,8 @@ export type ProvincialResult = {
   dividendTaxCredit: number;
   surtax: number;
   taxReduction: number;
+  /** Ontario LIFT credit (ON428-A). */
+  lift: number;
   healthPremium: number;
   taxPayable: number;
   /** Refundable credits claimed on the return (Ontario CARE, Quebec work premium). */
@@ -166,8 +168,25 @@ export function computeProvincial(input: ProvincialInputs): ProvincialResult {
     taxReduction = round2(Math.min(amount, taxBeforeReduction));
   }
 
+  // Ontario LIFT credit: reduces Ontario tax (not the Health Premium) after the tax reduction.
+  let lift = 0;
+  if (prov.lift) {
+    const l = prov.lift;
+    const maxLift = Math.min(l.max, Math.max(0, ctx.income.employment) * l.employmentRate);
+    const excess = Math.max(
+      Math.max(0, input.netIncome - l.individualThreshold),
+      isFamily ? Math.max(0, input.afni - l.familyThreshold) : 0
+    );
+    lift = round2(Math.min(Math.max(0, maxLift - excess * l.rate), Math.max(0, taxBeforeReduction - taxReduction)));
+    annotations.push({
+      key: 'low income individuals and families tax credit',
+      amount: lift,
+      reason: `LIFT: lesser of $${l.max} and ${formatPct(l.employmentRate)} of employment income, less ${formatPct(l.rate)} of income over $${l.individualThreshold} (family $${l.familyThreshold}).`,
+    });
+  }
+
   const premium = healthPremium(prov, taxableIncome);
-  const taxPayable = round2(taxBeforeReduction - taxReduction + premium);
+  const taxPayable = round2(taxBeforeReduction - taxReduction - lift + premium);
 
   // --- Refundable credits & benefits ---------------------------------------------------------
   const refundable: AppliedItem[] = [];
@@ -179,6 +198,7 @@ export function computeProvincial(input: ProvincialInputs): ProvincialResult {
     isFamily,
     familyEmployment: Math.max(0, ctx.income.employment) + Math.max(0, ctx.spouseEmploymentIncome ?? 0),
     childCareDeduction: input.childCareDeduction,
+    housing: ctx.housing ?? { rentPaid: 0, propertyTaxPaid: 0, northernOntario: false },
   };
   const claimsHousehold = ctx.benefits.includeBenefitsEstimates && ctx.benefits.claimHouseholdBenefits !== false;
 
@@ -188,7 +208,7 @@ export function computeProvincial(input: ProvincialInputs): ProvincialResult {
     const catalogKey = CATALOG_KEYS[b.id];
     const skipReason = !ctx.benefits.includeBenefitsEstimates
       ? 'Benefit estimates disabled.'
-      : b.onReturn
+      : b.onReturn && !b.household
         ? ctx.benefits.claimCareCredit === false
           ? 'Claimed on the spouse return.'
           : null
@@ -224,6 +244,7 @@ export function computeProvincial(input: ProvincialInputs): ProvincialResult {
     dividendTaxCredit,
     surtax,
     taxReduction,
+    lift,
     healthPremium: premium,
     taxPayable,
     refundable,
@@ -267,6 +288,8 @@ const CATALOG_KEYS: Record<string, string> = {
   on_care: 'ontario childcare access and relief from expenses tax credit',
   on_ostc: 'ontario sales tax credit',
   on_ocb: 'ontario child benefit',
+  on_oeptc: 'ontario energy and property tax credit',
+  on_noec: 'northern ontario energy credit',
 };
 
 // --- Benefit calculators -----------------------------------------------------------------------
@@ -278,6 +301,7 @@ type BenefitEnv = {
   isFamily: boolean;
   familyEmployment: number;
   childCareDeduction: number;
+  housing: { rentPaid: number; propertyTaxPaid: number; northernOntario: boolean };
 };
 
 type BenefitCalculator = (b: BenefitConfig, env: BenefitEnv) => number;
@@ -350,6 +374,35 @@ const BENEFIT_CALCULATORS: Record<string, BenefitCalculator> = {
     const rate = env.kids === 1 ? b.rateOneChild : b.rateMoreChildren;
     return reduce(b.perChild * env.kids, env.afni, b.threshold, rate);
   },
+  on_oeptc: (b, env) => {
+    // Occupancy cost = 20% of rent + property tax. Energy component capped; property tax component
+    // = min(10% of occupancy, cap) + add-on, limited to occupancy cost. Reduced by 2% of AFNI over threshold.
+    const occupancy = Math.max(0, env.housing.rentPaid) * b.rentShare + Math.max(0, env.housing.propertyTaxPaid);
+    if (occupancy <= 0) return 0;
+    const energy = Math.min(occupancy, b.energyMax);
+    const property = Math.min(occupancy, Math.min(occupancy * b.propertyRate, b.propertyCap) + b.propertyAddOn);
+    const threshold = !env.isFamily && env.kids === 0 ? b.singleThreshold : b.familyThreshold;
+    return reduce(energy + property, env.afni, threshold, b.rate);
+  },
+  on_noec: (b, env) => {
+    if (!env.housing.northernOntario || env.housing.rentPaid + env.housing.propertyTaxPaid <= 0) return 0;
+    const single = !env.isFamily && env.kids === 0;
+    return reduce(single ? b.singleMax : b.familyMax, env.afni, single ? b.singleThreshold : b.familyThreshold, b.rate);
+  },
+  bc_renter: (b, env) => (env.housing.rentPaid > 0 ? reduce(b.max, env.afni, b.threshold, b.rate) : 0),
+  mb_ratc: (b, env) => Math.min(b.max, Math.max(0, env.housing.rentPaid) * b.rentShare),
+  nb_ctb: (b, env) => {
+    if (env.kids <= 0) return 0;
+    const basic = reduce(b.perChild * env.kids, env.afni, b.threshold, env.kids === 1 ? b.rateOneChild : b.rateMoreChildren);
+    const wisIn = Math.min(b.wisMax, Math.max(0, env.familyEmployment - b.wisPhaseInBase) * b.wisPhaseInRate);
+    return basic + wisIn * linearFactor(env.afni, b.wisFrom, b.wisTo);
+  },
+  nu_cb: (b, env) => {
+    if (env.kids <= 0) return 0;
+    const worker = env.familyEmployment > b.workerIncomeBase ? (env.kids === 1 ? b.workerOneChild : b.workerMoreChildren) : 0;
+    return reduce(b.perChild * env.kids + worker, env.afni, b.threshold, env.kids === 1 ? b.rateOneChild : b.rateMoreChildren);
+  },
+  nl_seniors: (b, env) => (env.ctx.age >= b.minimumAge ? reduce(b.max, env.afni, b.threshold, b.rate) : 0),
   nt_cb: (b, env) => {
     if (env.kids <= 0) return 0;
     const n = env.kids;

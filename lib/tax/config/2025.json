@@ -347,9 +347,33 @@
           "perChild": 1760,
           "threshold": 26865,
           "rate": 0.08
+        },
+        {
+          "id": "on_oeptc",
+          "name": "Ontario energy and property tax credit (OTB)",
+          "rentShare": 0.2,
+          "energyMax": 290,
+          "propertyRate": 0.1,
+          "propertyCap": 944,
+          "propertyAddOn": 73,
+          "singleThreshold": 29047,
+          "familyThreshold": 36309,
+          "rate": 0.02
+        },
+        {
+          "id": "on_noec",
+          "name": "Northern Ontario energy credit (OTB)",
+          "singleMax": 189,
+          "familyMax": 290,
+          "singleThreshold": 50833,
+          "familyThreshold": 65356,
+          "rate": 0.01
         }
       ],
-      "notes": [],
+      "notes": [
+        "OEPTC uses the non-senior calculation; the senior version (higher maximum, age 64+) is not modelled.",
+        "OEPTC single-person threshold is assumed equal to the OSTC single threshold ($29,047)."
+      ],
       "surtax": [
         {
           "threshold": 5710,
@@ -396,6 +420,13 @@
         "type": "ontario",
         "basic": 294,
         "perDependant": 544
+      },
+      "lift": {
+        "max": 875,
+        "employmentRate": 0.0505,
+        "individualThreshold": 32500,
+        "familyThreshold": 65000,
+        "rate": 0.05
       }
     },
     "BC": {
@@ -463,6 +494,15 @@
           "threshold": 30176,
           "secondThreshold": 96562,
           "rate": 0.04
+        },
+        {
+          "id": "bc_renter",
+          "name": "B.C. renter's tax credit",
+          "onReturn": true,
+          "household": true,
+          "max": 400,
+          "threshold": 64764,
+          "rate": 0.02
         }
       ],
       "notes": [],
@@ -621,9 +661,19 @@
         "over200Rate": 0.174
       },
       "dividendTaxCreditRate": 0.08,
-      "benefits": [],
+      "benefits": [
+        {
+          "id": "mb_ratc",
+          "name": "Manitoba renters affordability tax credit",
+          "onReturn": true,
+          "household": true,
+          "max": 575,
+          "rentShare": 0.2
+        }
+      ],
       "notes": [
-        "Manitoba family tax benefit and Manitoba child benefit are not modelled."
+        "Manitoba family tax benefit, Manitoba child benefit and the renters seniors' top-up are not modelled.",
+        "The homeowners affordability tax credit is applied on the property tax bill, so it is not part of the return."
       ]
     },
     "NB": {
@@ -669,11 +719,23 @@
           "perChild": 100,
           "threshold": 35000,
           "rate": 0.02
+        },
+        {
+          "id": "nb_ctb",
+          "name": "New Brunswick child tax benefit",
+          "perChild": 250,
+          "threshold": 20000,
+          "rateOneChild": 0.025,
+          "rateMoreChildren": 0.05,
+          "wisMax": 250,
+          "wisPhaseInBase": 3750,
+          "wisPhaseInRate": 0.04,
+          "wisFrom": 20921,
+          "wisTo": 25921
         }
       ],
       "notes": [
-        "Low-income tax reduction amount/threshold are estimates (2024 values indexed; 2025 family maximum $1,604).",
-        "New Brunswick child tax benefit is not modelled."
+        "Low-income tax reduction amount/threshold are estimates (2024 values indexed; 2025 family maximum $1,604)."
       ],
       "taxReduction": {
         "type": "linear",
@@ -907,11 +969,20 @@
           ],
           "fullBelow": 20397,
           "zeroAt": 38193
+        },
+        {
+          "id": "nl_seniors",
+          "name": "Newfoundland and Labrador seniors' benefit",
+          "max": 1882,
+          "minimumAge": 64,
+          "threshold": 30409,
+          "rate": 0.1166
         }
       ],
       "notes": [
         "NL income supplement uses 2025 benefit-year amounts; its phase-out rate (9%) is an estimate.",
-        "NL child benefit modelled as a linear phase-out between $20,397 and $38,193 (estimate)."
+        "NL child benefit modelled as a linear phase-out between $20,397 and $38,193 (estimate).",
+        "NL seniors' benefit phase-out rate (11.66%) is an estimate."
       ],
       "taxReduction": {
         "type": "linear",
@@ -1070,9 +1141,21 @@
         "over200Rate": 0.115
       },
       "dividendTaxCreditRate": 0.0551,
-      "benefits": [],
+      "benefits": [
+        {
+          "id": "nu_cb",
+          "name": "Nunavut child benefit",
+          "perChild": 696,
+          "threshold": 22065,
+          "rateOneChild": 0.025,
+          "rateMoreChildren": 0.05,
+          "workerOneChild": 290,
+          "workerMoreChildren": 369,
+          "workerIncomeBase": 3955
+        }
+      ],
       "notes": [
-        "Nunavut child benefit is not modelled (published amounts conflict)."
+        "Nunavut child benefit uses the doubled 2026 amount ($696/child); its reduction rates (2.5%/5%) are estimates."
       ]
     },
     "QC": {

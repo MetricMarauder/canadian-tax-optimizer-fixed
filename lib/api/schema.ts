@@ -61,6 +61,9 @@ const HouseholdSettingsSchema = z.object({
   maritalStatus: z.enum(['single', 'married', 'commonlaw']),
   claimant: z.enum(['taxpayer', 'spouse']).default('taxpayer'),
   tuitionTransferAmount: z.number().min(0).default(0),
+  rentPaid: z.number().min(0).default(0),
+  propertyTaxPaid: z.number().min(0).default(0),
+  northernOntario: z.boolean().default(false),
 });
 
 export const CalculateRequestSchema = z.object({
