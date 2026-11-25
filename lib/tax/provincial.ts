@@ -185,14 +185,23 @@ export function computeProvincial(input: ProvincialInputs): ProvincialResult {
   for (const b of prov.benefits) {
     const calc = BENEFIT_CALCULATORS[b.id];
     if (!calc) continue;
-    if (b.onReturn) {
-      if (!ctx.benefits.includeBenefitsEstimates || ctx.benefits.claimCareCredit === false) continue;
-    } else if (!claimsHousehold) {
+    const catalogKey = CATALOG_KEYS[b.id];
+    const skipReason = !ctx.benefits.includeBenefitsEstimates
+      ? 'Benefit estimates disabled.'
+      : b.onReturn
+        ? ctx.benefits.claimCareCredit === false
+          ? 'Claimed on the spouse return.'
+          : null
+        : !claimsHousehold
+          ? 'Household benefits claimed on the spouse return.'
+          : null;
+    if (skipReason) {
+      if (catalogKey) annotations.push({ key: catalogKey, amount: 0, reason: skipReason });
       continue;
     }
     const amount = round2(Math.max(0, calc(b, env)));
     if (amount > 0) (b.onReturn ? refundable : benefits).push({ name: b.name, amount, jurisdiction: name });
-    if (CATALOG_KEYS[b.id]) annotations.push({ key: CATALOG_KEYS[b.id], amount, reason: `${b.name} estimate.` });
+    if (catalogKey) annotations.push({ key: catalogKey, amount, reason: `${b.name} estimate.` });
   }
 
   if (isQuebec && prov.quebec) {

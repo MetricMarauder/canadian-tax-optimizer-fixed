@@ -280,7 +280,10 @@ function annotateProvincialRows(
     if (match) {
       row.applied = match.amount > 0;
       row.amountApplied = match.amount;
-      row.reason = match.amount > 0 ? match.reason : `Not applicable for these inputs. ${match.reason}`;
+      row.reason =
+        match.amount > 0 || /claimed on the spouse|disabled/i.test(match.reason)
+          ? match.reason
+          : `Not applicable for these inputs. ${match.reason}`;
     } else if (key.includes('tuition')) {
       row.reason = 'Ontario has no tuition credit for current-year fees (eliminated in 2017); pre-2017 carryforwards are not modelled.';
     } else {
